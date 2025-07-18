@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vtk-mcp-server"
+version = "0.1.0"
+description = "MCP server for VTK class documentation"
+authors = [{name = "Vicente Adolfo Bolea Sanchez", email = "vicente.bolea@kitware.com"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers", 
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "fastmcp>=2.0.0",
+    "beautifulsoup4>=4.12.0",
+    "requests>=2.31.0", 
+    "lxml>=4.9.0",
+    "click>=8.0.0",
+]
+
+[project.scripts]
+vtk-mcp-server = "vtk_mcp_server.server:main"
+vtk-mcp-client = "vtk_mcp_server.simple_client:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vtk_mcp_server"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/README.md"]
