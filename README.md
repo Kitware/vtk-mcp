@@ -155,3 +155,6 @@ pytest -k "test_name"          # Run tests matching pattern
 - `tests/test_http_integration.py` - Full integration tests with HTTP transport
 - `tests/test_stdio_integration.py` - Full integration tests with stdio transport
 - `tests/conftest.py` - Shared test fixtures and configuration
+
+## Authors
+- Vicente Bolea @ Kitware
