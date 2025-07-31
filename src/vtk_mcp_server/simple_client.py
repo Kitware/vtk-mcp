@@ -25,10 +25,7 @@ class SimpleVTKClient:
                 "params": {
                     "protocolVersion": "2024-11-05",
                     "capabilities": {"tools": {}},
-                    "clientInfo": {
-                        "name": "vtk-mcp-client",
-                        "version": "1.0.0"
-                    },
+                    "clientInfo": {"name": "vtk-mcp-client", "version": "1.0.0"},
                 },
             }
             response = self._make_request(payload)
@@ -154,8 +151,9 @@ class SimpleVTKClient:
                 if "properties" in schema:
                     print("  Parameters:")
                     for name, info in schema["properties"].items():
-                        desc = info["description"]
-                        print(f"    - {name} ({info['type']}): {desc}")
+                        desc = info.get("description", "No description")
+                        type_info = info.get("type", "unknown")
+                        print(f"    - {name} ({type_info}): {desc}")
                 print()
         elif result and "error" in result:
             print(f"Error: {result['error']['message']}")
@@ -205,9 +203,7 @@ def search(ctx, search_term):
 def info_python(ctx, class_name):
     """Get Python API documentation for a VTK class"""
     client = ctx.obj["client"]
-    click.echo(
-        f"Getting Python API information for VTK class '{class_name}'..."
-    )
+    click.echo(f"Getting Python API information for VTK class '{class_name}'...")
     click.echo()
     client.get_class_info_python(class_name)
 

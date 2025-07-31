@@ -9,7 +9,7 @@ description = "MCP server for VTK class documentation"
 authors = [{name = "Vicente Adolfo Bolea Sanchez", email = "vicente.bolea@kitware.com"}]
 license = {text = "MIT"}
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -30,8 +30,39 @@ dependencies = [
 vtk-mcp-server = "vtk_mcp_server.server:main"
 vtk-mcp-client = "vtk_mcp_server.simple_client:main"
 
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-mock>=3.10.0",
+    "responses>=0.23.0",
+    "httpx>=0.24.0",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/vtk_mcp_server"]
 
 [tool.hatch.build.targets.sdist]
 include = ["/src", "/README.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+]
+markers = [
+    "unit: Unit tests that don't require external services",
+    "integration: Integration tests that require server/client interaction",
+    "http: HTTP transport integration tests",
+    "stdio: Stdio transport integration tests",
+    "slow: Tests that take longer to run",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]

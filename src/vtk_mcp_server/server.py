@@ -39,9 +39,7 @@ def search_vtk_classes(search_term: str) -> str:
             return f"No VTK classes found containing '{search_term}'"
 
         response = f"VTK classes containing '{search_term}':\n\n"
-        response += "\n".join(
-            f"{i}. {cls}" for i, cls in enumerate(matches, 1)
-        )
+        response += "\n".join(f"{i}. {cls}" for i, cls in enumerate(matches, 1))
         response += f"\n\nFound {len(matches)} classes."
         return response
     except Exception as e:
@@ -80,8 +78,7 @@ def get_vtk_class_info_python(class_name: str) -> str:
 
         # Format the output nicely
         return (
-            f"# Python API Documentation for {class_name}\n\n"
-            f"```\n{help_text}\n```"
+            f"# Python API Documentation for {class_name}\n\n" f"```\n{help_text}\n```"
         )
 
     except ImportError:

@@ -28,7 +28,7 @@ vtk-mcp-server --transport http --host localhost --port 8000
 ### Client
 
 ```bash
-# Get detailed C++ class information  
+# Get detailed C++ class information
 vtk-mcp-client info-cpp vtkActor
 vtk-mcp-client info-cpp vtkPolyData
 
@@ -54,6 +54,46 @@ The server provides three MCP tools:
 - `get_vtk_class_info_python(class_name)` - Get Python API documentation using help() function
 - `search_vtk_classes(search_term)` - Search for VTK classes containing a term
 
+## Docker
+
+### Using Pre-built Image
+
+```bash
+# Run with Docker/Podman
+docker run -p 8000:8000 ghcr.io/kitware/vtk-mcp:latest
+
+# Or with Podman
+podman run -p 8000:8000 ghcr.io/kitware/vtk-mcp:latest
+
+# Access server at http://localhost:8000/mcp/
+```
+
+### Building Locally
+
+```bash
+# Build image
+docker build -t vtk-mcp-server .
+
+# Or with Podman
+podman build -t vtk-mcp-server .
+
+# Run container
+docker run -p 8000:8000 vtk-mcp-server
+```
+
+### Docker Compose
+
+```bash
+# Start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
 ## Development
 
 ```bash
@@ -72,3 +112,44 @@ flake8 src/ --max-line-length=88
 vtk-mcp-server --transport http &
 vtk-mcp-client info-cpp vtkActor
 ```
+
+## Testing
+
+Install test dependencies:
+
+```bash
+pip install -e ".[test]"
+```
+
+Run tests:
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test types using markers
+pytest -m unit                  # Unit tests only
+pytest -m integration           # Integration tests only
+pytest -m http                  # HTTP transport tests
+pytest -m stdio                 # Stdio transport tests
+
+# Run specific test files
+pytest tests/test_server_functions.py      # Server unit tests
+pytest tests/test_client_no_server.py      # Client error handling
+pytest tests/test_http_integration.py      # HTTP integration
+pytest tests/test_stdio_integration.py     # Stdio integration
+
+# Useful pytest options
+pytest -v                       # Verbose output
+pytest -x                       # Stop on first failure
+pytest --tb=short              # Short traceback format
+pytest -k "test_name"          # Run tests matching pattern
+```
+
+### Test Structure
+
+- `tests/test_server_functions.py` - Unit tests for MCP tool functions (no server required)
+- `tests/test_client_no_server.py` - Client error handling when server unavailable
+- `tests/test_http_integration.py` - Full integration tests with HTTP transport
+- `tests/test_stdio_integration.py` - Full integration tests with stdio transport
+- `tests/conftest.py` - Shared test fixtures and configuration
