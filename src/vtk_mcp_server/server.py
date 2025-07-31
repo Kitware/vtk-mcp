@@ -13,8 +13,8 @@ scraper = VTKClassScraper()
 
 
 @mcp.tool()
-def get_vtk_class_info(class_name: str) -> str:
-    """Get detailed information about a VTK class from online documentation."""
+def get_vtk_class_info_cpp(class_name: str) -> str:
+    """Get detailed information about a VTK class from online C++ docs."""
     if not class_name:
         return "Error: class_name is required"
 
@@ -49,7 +49,7 @@ def search_vtk_classes(search_term: str) -> str:
 
 
 @mcp.tool()
-def get_vtk_python_help(class_name: str) -> str:
+def get_vtk_class_info_python(class_name: str) -> str:
     """Get Python API documentation for a VTK class using help()."""
     if not class_name:
         return "Error: class_name is required"

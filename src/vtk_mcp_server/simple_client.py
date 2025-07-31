@@ -88,14 +88,14 @@ class SimpleVTKClient:
         else:
             print("Unexpected response format")
 
-    def get_class_info(self, class_name):
-        """Get VTK class information"""
+    def get_class_info_cpp(self, class_name):
+        """Get VTK C++ class information"""
         payload = {
             "jsonrpc": "2.0",
             "id": "1",
             "method": "tools/call",
             "params": {
-                "name": "get_vtk_class_info",
+                "name": "get_vtk_class_info_cpp",
                 "arguments": {"class_name": class_name},
             },
         }
@@ -120,14 +120,14 @@ class SimpleVTKClient:
             result = self._parse_response(response)
             self._handle_tool_response(result)
 
-    def get_python_help(self, class_name):
-        """Get VTK Python API help"""
+    def get_class_info_python(self, class_name):
+        """Get VTK Python API information"""
         payload = {
             "jsonrpc": "2.0",
             "id": "3",
             "method": "tools/call",
             "params": {
-                "name": "get_vtk_python_help",
+                "name": "get_vtk_class_info_python",
                 "arguments": {"class_name": class_name},
             },
         }
@@ -180,12 +180,12 @@ def cli(ctx, host, port):
 @cli.command()
 @click.argument("class_name")
 @click.pass_context
-def info(ctx, class_name):
-    """Get detailed information about a VTK class"""
+def info_cpp(ctx, class_name):
+    """Get detailed C++ information about a VTK class"""
     client = ctx.obj["client"]
-    click.echo(f"Getting information for VTK class '{class_name}'...")
+    click.echo(f"Getting C++ information for VTK class '{class_name}'...")
     click.echo()
-    client.get_class_info(class_name)
+    client.get_class_info_cpp(class_name)
 
 
 @cli.command()
@@ -202,12 +202,14 @@ def search(ctx, search_term):
 @cli.command()
 @click.argument("class_name")
 @click.pass_context
-def python_help(ctx, class_name):
+def info_python(ctx, class_name):
     """Get Python API documentation for a VTK class"""
     client = ctx.obj["client"]
-    click.echo(f"Getting Python API help for VTK class '{class_name}'...")
+    click.echo(
+        f"Getting Python API information for VTK class '{class_name}'..."
+    )
     click.echo()
-    client.get_python_help(class_name)
+    client.get_class_info_python(class_name)
 
 
 @cli.command()

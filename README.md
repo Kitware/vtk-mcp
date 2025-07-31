@@ -28,9 +28,13 @@ vtk-mcp-server --transport http --host localhost --port 8000
 ### Client
 
 ```bash
-# Get detailed class information
-vtk-mcp-client info vtkActor
-vtk-mcp-client info vtkPolyData
+# Get detailed C++ class information  
+vtk-mcp-client info-cpp vtkActor
+vtk-mcp-client info-cpp vtkPolyData
+
+# Get Python API documentation
+vtk-mcp-client info-python vtkSphere
+vtk-mcp-client info-python Renderer
 
 # Search for classes containing a term
 vtk-mcp-client search Camera
@@ -40,13 +44,14 @@ vtk-mcp-client search Filter
 vtk-mcp-client list-tools
 
 # Connect to different server
-vtk-mcp-client --host localhost --port 8000 info vtkActor
+vtk-mcp-client --host localhost --port 8000 info-cpp vtkActor
 ```
 
 ## MCP Tools
 
-The server provides two MCP tools:
-- `get_vtk_class_info(class_name)` - Get detailed documentation for a VTK class
+The server provides three MCP tools:
+- `get_vtk_class_info_cpp(class_name)` - Get detailed C++ documentation for a VTK class from online documentation
+- `get_vtk_class_info_python(class_name)` - Get Python API documentation using help() function
 - `search_vtk_classes(search_term)` - Search for VTK classes containing a term
 
 ## Development
@@ -65,5 +70,5 @@ flake8 src/ --max-line-length=88
 
 # Test the HTTP server and client
 vtk-mcp-server --transport http &
-vtk-mcp-client info vtkActor
+vtk-mcp-client info-cpp vtkActor
 ```
