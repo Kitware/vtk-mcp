@@ -25,7 +25,10 @@ class SimpleVTKClient:
                 "params": {
                     "protocolVersion": "2024-11-05",
                     "capabilities": {"tools": {}},
-                    "clientInfo": {"name": "vtk-mcp-client", "version": "1.0.0"},
+                    "clientInfo": {
+                        "name": "vtk-mcp-client",
+                        "version": "1.0.0"
+                    },
                 },
             }
             response = self._make_request(payload)
@@ -117,6 +120,22 @@ class SimpleVTKClient:
             result = self._parse_response(response)
             self._handle_tool_response(result)
 
+    def get_python_help(self, class_name):
+        """Get VTK Python API help"""
+        payload = {
+            "jsonrpc": "2.0",
+            "id": "3",
+            "method": "tools/call",
+            "params": {
+                "name": "get_vtk_python_help",
+                "arguments": {"class_name": class_name},
+            },
+        }
+        response = self._make_request(payload)
+        if response:
+            result = self._parse_response(response)
+            self._handle_tool_response(result)
+
     def list_tools(self):
         """List available MCP tools"""
         payload = {"jsonrpc": "2.0", "id": "3", "method": "tools/list"}
@@ -131,10 +150,12 @@ class SimpleVTKClient:
             for tool in result["result"]["tools"]:
                 print(f"• {tool['name']}")
                 print(f"  Description: {tool['description']}")
-                if "inputSchema" in tool and "properties" in tool["inputSchema"]:
+                schema = tool.get("inputSchema", {})
+                if "properties" in schema:
                     print("  Parameters:")
-                    for name, info in tool["inputSchema"]["properties"].items():
-                        print(f"    - {name} ({info['type']}): {info['description']}")
+                    for name, info in schema["properties"].items():
+                        desc = info["description"]
+                        print(f"    - {name} ({info['type']}): {desc}")
                 print()
         elif result and "error" in result:
             print(f"Error: {result['error']['message']}")
@@ -176,6 +197,17 @@ def search(ctx, search_term):
     click.echo(f"Searching for VTK classes containing '{search_term}'...")
     click.echo()
     client.search_classes(search_term)
+
+
+@cli.command()
+@click.argument("class_name")
+@click.pass_context
+def python_help(ctx, class_name):
+    """Get Python API documentation for a VTK class"""
+    client = ctx.obj["client"]
+    click.echo(f"Getting Python API help for VTK class '{class_name}'...")
+    click.echo()
+    client.get_python_help(class_name)
 
 
 @cli.command()

@@ -2,6 +2,8 @@
 
 import asyncio
 import click
+import io
+from contextlib import redirect_stdout
 from fastmcp import FastMCP
 from .vtk_scraper import VTKClassScraper
 
@@ -12,7 +14,7 @@ scraper = VTKClassScraper()
 
 @mcp.tool()
 def get_vtk_class_info(class_name: str) -> str:
-    """Get detailed information about a VTK class from the online documentation."""
+    """Get detailed information about a VTK class from online documentation."""
     if not class_name:
         return "Error: class_name is required"
 
@@ -37,11 +39,58 @@ def search_vtk_classes(search_term: str) -> str:
             return f"No VTK classes found containing '{search_term}'"
 
         response = f"VTK classes containing '{search_term}':\n\n"
-        response += "\n".join(f"{i}. {cls}" for i, cls in enumerate(matches, 1))
+        response += "\n".join(
+            f"{i}. {cls}" for i, cls in enumerate(matches, 1)
+        )
         response += f"\n\nFound {len(matches)} classes."
         return response
     except Exception as e:
         return f"Error searching for '{search_term}': {str(e)}"
+
+
+@mcp.tool()
+def get_vtk_python_help(class_name: str) -> str:
+    """Get Python API documentation for a VTK class using help()."""
+    if not class_name:
+        return "Error: class_name is required"
+
+    try:
+        # Import vtk module
+        import vtk
+
+        # Ensure class name starts with 'vtk'
+        if not class_name.startswith("vtk"):
+            class_name = f"vtk{class_name}"
+
+        # Get the class from vtk module
+        if not hasattr(vtk, class_name):
+            return f"Class '{class_name}' not found in VTK Python API."
+
+        vtk_class = getattr(vtk, class_name)
+
+        # Capture help() output
+        help_output = io.StringIO()
+        with redirect_stdout(help_output):
+            help(vtk_class)
+
+        help_text = help_output.getvalue()
+
+        if not help_text:
+            return f"No help documentation available for '{class_name}'"
+
+        # Format the output nicely
+        return (
+            f"# Python API Documentation for {class_name}\n\n"
+            f"```\n{help_text}\n```"
+        )
+
+    except ImportError:
+        return (
+            "Error: VTK Python package is not installed. "
+            "Install with 'pip install vtk'"
+        )
+    except Exception as e:
+        return f"Error getting Python help for '{class_name}': {str(e)}"
 
 
 def _format_class_info(info):
