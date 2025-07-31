@@ -1,5 +1,7 @@
 # VTK MCP Server
 
+<img width="256" height="256" alt="vtk-mcp" src="https://github.com/user-attachments/assets/f1e8fc6d-2f51-4a15-8d02-12a05074dded" />
+
 Access VTK class documentation through a Model Context Protocol server.
 
 ## Installation
