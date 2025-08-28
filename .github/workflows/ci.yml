@@ -128,12 +128,13 @@ jobs:
       - name: Build and push container image
         run: |
           # Build the image
-          podman build -t "ghcr.io/${{ github.repository }}/vtk-mcp:latest" \
-                       -t "ghcr.io/${{ github.repository }}/vtk-mcp:${{ github.sha }}" \
-                       -t "ghcr.io/${{ github.repository }}/vtk-mcp:${{ steps.slug.outputs.SHORT_SHA }}" \
+          GITHUB_REPOSITORY="$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')"
+          podman build -t "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:latest" \
+                       -t "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:${{ github.sha }}" \
+                       -t "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:${{ steps.slug.outputs.SHORT_SHA }}" \
                        .
 
           # Push all tags
-          podman push "ghcr.io/${{ github.repository }}/vtk-mcp:latest"
-          podman push "ghcr.io/${{ github.repository }}/vtk-mcp:${{ github.sha }}"
-          podman push "ghcr.io/${{ github.repository }}/vtk-mcp:${{ steps.slug.outputs.SHORT_SHA }}"
+          podman push "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:latest"
+          podman push "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:${{ github.sha }}"
+          podman push "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:${{ steps.slug.outputs.SHORT_SHA }}"
