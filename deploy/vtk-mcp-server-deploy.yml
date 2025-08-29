@@ -1,0 +1,30 @@
+---
+- name: Deploy vtk-server
+  become: yes
+  hosts: all
+  tasks:
+    - ansible.builtin.package:
+        name:
+          - docker.io
+          - docker-compose-v2
+        state: latest
+
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: /var/opt/vtk-mcp-server-compose
+        state: directory
+
+    - name: install vtk-mcp-server-compose files
+      ansible.builtin.copy:
+        src: "{{ item[0]}}"
+        dest: "{{ item[1] }}"
+      loop:
+        - ['./vtk-mcp-server-compose.yml',       '/var/opt/vtk-mcp-server/']
+        - ['./vtk-mcp-server.service',   '/etc/systemd/system/']
+
+    - name: restart vtk-mcp-server services
+      ansible.builtin.systemd:
+        daemon-reload: true
+        name: vtk-mcp-server.service
+        enabled: true
+        state: restarted

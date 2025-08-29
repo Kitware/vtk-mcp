@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  vtk-mcp:
+    image: ghcr.io/kitware/vtk-mcp/vtk-mcp:latest
+    network_mode: host
+    restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=300  # Check every 5 minutes
+      - WATCHTOWER_CLEANUP=true       # Remove old images
+      - WATCHTOWER_INCLUDE_RESTARTING=true
+
