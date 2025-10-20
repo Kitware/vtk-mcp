@@ -133,6 +133,28 @@ class SimpleVTKClient:
             result = self._parse_response(response)
             self._handle_tool_response(result)
 
+    def vector_search_vtk_examples(
+        self, query, collection_name="vtk-examples", top_k=5
+    ):
+        """Search VTK examples using vector search"""
+        payload = {
+            "jsonrpc": "2.0",
+            "id": "4",
+            "method": "tools/call",
+            "params": {
+                "name": "vector_search_vtk_examples",
+                "arguments": {
+                    "query": query,
+                    "collection_name": collection_name,
+                    "top_k": top_k,
+                },
+            },
+        }
+        response = self._make_request(payload)
+        if response:
+            result = self._parse_response(response)
+            self._handle_tool_response(result)
+
     def list_tools(self):
         """List available MCP tools"""
         payload = {"jsonrpc": "2.0", "id": "3", "method": "tools/list"}
@@ -206,6 +228,19 @@ def info_python(ctx, class_name):
     click.echo(f"Getting Python API information for VTK class '{class_name}'...")
     click.echo()
     client.get_class_info_python(class_name)
+
+
+@cli.command()
+@click.argument("query")
+@click.option("--collection", default="vtk-examples", help="Collection name")
+@click.option("--top-k", default=5, type=int, help="Number of results to return")
+@click.pass_context
+def vector_search(ctx, query, collection, top_k):
+    """Search for VTK examples using vector search"""
+    client = ctx.obj["client"]
+    click.echo(f"Searching for VTK examples: '{query}'...")
+    click.echo()
+    client.vector_search_vtk_examples(query, collection, top_k)
 
 
 @cli.command()

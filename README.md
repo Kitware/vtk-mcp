@@ -51,10 +51,50 @@ vtk-mcp-client --host localhost --port 8000 info-cpp vtkActor
 
 ## MCP Tools
 
-The server provides three MCP tools:
+The server provides four MCP tools:
 - `get_vtk_class_info_cpp(class_name)` - Get detailed C++ documentation for a VTK class from online documentation
 - `get_vtk_class_info_python(class_name)` - Get Python API documentation using help() function
 - `search_vtk_classes(search_term)` - Search for VTK classes containing a term
+- `vector_search_vtk_examples(query)` - Search VTK examples using vector similarity (requires embeddings database)
+
+## Vector Search with RAG
+
+The server supports semantic search over VTK Python examples using vector embeddings. This requires the embeddings database.
+
+### Downloading the Embeddings Database
+
+The pre-built embeddings database is available as a container image on GitHub Container Registry:
+
+```bash
+# Using Docker
+docker create --name vtk-embeddings ghcr.io/kitware/vtk-mcp/embeddings-database:latest
+docker cp vtk-embeddings:/vtk-examples-embeddings.tar.gz .
+docker rm vtk-embeddings
+
+# Using Podman
+podman create --name vtk-embeddings ghcr.io/kitware/vtk-mcp/embeddings-database:latest
+podman cp vtk-embeddings:/vtk-examples-embeddings.tar.gz .
+podman rm vtk-embeddings
+
+# Extract the database
+tar -xzf vtk-examples-embeddings.tar.gz
+```
+
+### Using Vector Search
+
+After downloading and extracting the database, start the server with the database path:
+
+```bash
+# Install RAG dependencies
+pip install -r rag-components/requirements.txt
+
+# Start server with vector search enabled
+vtk-mcp-server --transport http --database-path ./db/vtk-examples
+
+# Use vector search with the client
+vtk-mcp-client vector-search "render a sphere"
+vtk-mcp-client vector-search "read DICOM files" --top-k 10
+```
 
 ## Docker
 

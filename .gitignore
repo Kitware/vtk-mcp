@@ -70,3 +70,5 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 CLAUDE.md
+db/
+vtk-examples.json
