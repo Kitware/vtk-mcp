@@ -3,13 +3,18 @@
 import asyncio
 import click
 import io
+import sys
 from contextlib import redirect_stdout
+from pathlib import Path
 from fastmcp import FastMCP
 from .vtk_scraper import VTKClassScraper
 
 # Initialize
 mcp = FastMCP("VTK MCP Server")
 scraper = VTKClassScraper()
+
+# Global database path (set via CLI)
+_database_path = None
 
 
 @mcp.tool()
@@ -90,6 +95,145 @@ def get_vtk_class_info_python(class_name: str) -> str:
         return f"Error getting Python help for '{class_name}': {str(e)}"
 
 
+@mcp.tool()
+def vector_search_vtk_examples(
+    query: str,
+    collection_name: str = "vtk-examples",
+    top_k: int = 5,
+) -> str:
+    """Search VTK examples using vector similarity search with RAG.
+
+    This function performs semantic search over VTK code examples using embeddings
+    and returns the most relevant code snippets and documentation.
+
+    Args:
+        query: The search query describing what you're looking for
+        collection_name: Name of the collection in the database
+            (default: vtk-examples)
+        top_k: Number of top results to return (default: 5)
+
+    Returns:
+        Formatted string with code snippets, documentation, and relevance scores
+    """
+    if not query:
+        return "Error: query is required"
+
+    if not _database_path:
+        return (
+            "Error: Database path not configured. "
+            "Start the server with --database-path option."
+        )
+
+    try:
+        # Check dependencies
+        import importlib.util
+
+        required_modules = ["chromadb", "sentence_transformers"]
+        missing_modules = [
+            module
+            for module in required_modules
+            if importlib.util.find_spec(module) is None
+        ]
+
+        if missing_modules:
+            return (
+                f"Error: Missing required dependencies: {', '.join(missing_modules)}\n"
+                "Install with: pip install chromadb sentence-transformers\n\n"
+                "Or ensure the rag-components submodule is initialized:\n"
+                "git submodule update --init --recursive"
+            )
+
+        # Setup path and import
+        script_dir = Path(__file__).resolve().parent
+        project_root = script_dir.parent.parent
+        rag_path = str(project_root / "rag-components")
+
+        if rag_path not in sys.path:
+            sys.path.insert(0, rag_path)
+
+        from query_db import query_db, initialize_db
+
+        # Initialize database client with configured path
+        client = initialize_db(_database_path)
+
+        # Perform vector search with reranking
+        results = query_db(
+            query=query, collection_name=collection_name, top_k=top_k, client=client
+        )
+
+        # Format results
+        return _format_vector_search_results(query, results, top_k)
+
+    except Exception as e:
+        return f"Error performing vector search: {str(e)}"
+
+
+def _format_vector_search_results(query, results, top_k):
+    """Format vector search results into readable markdown."""
+    lines = [
+        f"# Vector Search Results for: {query}",
+        "",
+        f"Found {top_k} most relevant code examples and documentation snippets.",
+        "",
+    ]
+
+    # Format code results
+    if results["code_documents"]:
+        lines.append("## Code Examples")
+        lines.append("")
+
+        for i, (document, metadata, score) in enumerate(
+            zip(
+                results["code_documents"],
+                results["code_metadata"],
+                results["code_scores"],
+            ),
+            1,
+        ):
+            lines.append(f"### Result {i} (Relevance: {score:.4f})")
+            lines.append("")
+
+            # Add metadata if available
+            if metadata:
+                source = metadata.get("source", "Unknown")
+                lines.append(f"**Source:** {source}")
+                lines.append("")
+
+            # Add code snippet
+            lines.append("```python")
+            lines.append(document.strip())
+            lines.append("```")
+            lines.append("")
+
+    # Format text/documentation results
+    if results["text_documents"]:
+        lines.append("## Documentation Snippets")
+        lines.append("")
+
+        for i, (document, metadata, score) in enumerate(
+            zip(
+                results["text_documents"],
+                results["text_metadata"],
+                results["text_scores"],
+            ),
+            1,
+        ):
+            lines.append(f"### Snippet {i} (Relevance: {score:.4f})")
+            lines.append("")
+
+            # Add metadata if available
+            if metadata:
+                source = metadata.get("source", "Unknown")
+                lines.append(f"**Source:** {source}")
+                lines.append("")
+
+            # Add text content
+            lines.append(document.strip())
+            lines.append("")
+
+    return "\n".join(lines)
+
+
 def _format_class_info(info):
     """Format class info into readable markdown."""
     lines = [f"# {info['class_name']}", ""]
@@ -130,8 +274,20 @@ def _format_class_info(info):
 )
 @click.option("--host", default="127.0.0.1", help="Host (HTTP only)")
 @click.option("--port", default=8000, type=int, help="Port (HTTP only)")
-def main(transport, host, port):
+@click.option(
+    "--database-path",
+    type=click.Path(exists=True),
+    help="Path to the RAG database (required for vector search)",
+)
+def main(transport, host, port, database_path):
     """Run the VTK MCP Server"""
+    global _database_path
+
+    # Set global database path if provided
+    if database_path:
+        _database_path = database_path
+        click.echo(f"Database path configured: {database_path}")
+
     if transport == "http":
         click.echo(f"Starting VTK MCP Server on http://{host}:{port}")
         asyncio.run(mcp.run_http_async(host=host, port=port))

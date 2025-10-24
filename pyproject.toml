@@ -60,6 +60,7 @@ markers = [
     "integration: Integration tests that require server/client interaction",
     "http: HTTP transport integration tests",
     "stdio: Stdio transport integration tests",
+    "vector_search: Vector search integration tests (requires podman and embeddings database)",
     "slow: Tests that take longer to run",
 ]
 filterwarnings = [

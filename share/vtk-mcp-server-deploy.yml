@@ -19,7 +19,7 @@
         src: "{{ item[0]}}"
         dest: "{{ item[1] }}"
       loop:
-        - ['./vtk-mcp-server-compose.yml',       '/var/opt/vtk-mcp-server/']
+        - ['./vtk-mcp-server-compose.yml', '/var/opt/vtk-mcp-server/']
         - ['./vtk-mcp-server.service',   '/etc/systemd/system/']
 
     - name: restart vtk-mcp-server services
