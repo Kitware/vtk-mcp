@@ -1,28 +1,32 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [project]
 name = "vtk-mcp-server"
-version = "0.1.0"
+dynamic = ["version"]
 description = "MCP server for VTK class documentation"
 authors = [{name = "Vicente Adolfo Bolea Sanchez", email = "vicente.bolea@kitware.com"}]
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.10"
+keywords = ["vtk", "mcp", "model-context-protocol", "documentation", "visualization"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
     "fastmcp>=2.0.0",
     "beautifulsoup4>=4.12.0",
+    "importlib_resources>=5.0.0",
     "requests>=2.31.0",
     "lxml>=4.9.0",
     "click>=8.0.0",
+    "chromadb==0.6.3",
+    "sentence-transformers==3.4.1",
     "vtk",
 ]
 
@@ -39,11 +43,18 @@ test = [
     "httpx>=0.24.0",
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/vtk_mcp_server"]
+[project.urls]
+Homepage = "https://github.com/kitware/vtk-mcp"
+Documentation = "https://github.com/kitware/vtk-mcp/blob/master/README.md"
+Repository = "https://github.com/kitware/vtk-mcp"
+Issues = "https://github.com/kitware/vtk-mcp/issues"
 
-[tool.hatch.build.targets.sdist]
-include = ["/src", "/README.md"]
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+fallback_version = "0.1.0"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -25,6 +25,9 @@ wheels/
 *.egg
 MANIFEST
 
+# Auto-generated version file
+src/vtk_mcp_server/_version.py
+
 # PyInstaller
 *.manifest
 *.spec

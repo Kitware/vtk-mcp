@@ -26,7 +26,8 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
 RUN apt update && \
     apt install --no-install-recommends --no-install-suggests -y \
     libgl1-mesa-dev \
-    libxrender-dev/stable && \
+    libxrender-dev/stable \
+    git && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -39,10 +40,7 @@ COPY --from=embeddings /app/db /app/db
 
 # Install Python dependencies (including RAG dependencies)
 RUN pip install --upgrade pip && \
-    pip install --verbose . && \
-    pip install -r rag-components/requirements.txt
-
-EXPOSE 8000
+    pip install --verbose .
 
 # Start server with database path configured
 CMD ["vtk-mcp-server", "--transport", "http", "--host", "0.0.0.0", "--port", "8000", "--database-path", "/app/db/vtk-examples"]

@@ -196,5 +196,33 @@ pytest -k "test_name"          # Run tests matching pattern
 - `tests/test_stdio_integration.py` - Full integration tests with stdio transport
 - `tests/conftest.py` - Shared test fixtures and configuration
 
+## Release Process
+
+The package version is automatically determined from git tags using `hatch-vcs`.
+
+### Creating a Release
+
+```bash
+# 1. Ensure all changes are committed
+git status
+
+# 2. Create and push a new tag
+git tag -a v0.2.0 -m "Release v0.2.0"
+git push origin v0.2.0
+
+# 3. Build the package
+pip install build hatch-vcs twine
+python -m build
+
+# 4. Check the package
+twine check dist/*
+
+# 5. Upload to PyPI (or TestPyPI first)
+twine upload dist/*
+# For TestPyPI: twine upload --repository testpypi dist/*
+```
+
+The version will be automatically set based on the git tag.
+
 ## Authors
 - Vicente Bolea @ Kitware

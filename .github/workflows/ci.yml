@@ -100,8 +100,8 @@ jobs:
           source venv/bin/activate
           pytest -m integration -v
 
-  docker:
-    name: Build and Push Docker Image
+  docker-deploy:
+    name: Build and Push Deployment Image
     runs-on: ubuntu-latest
     needs: [lint, actionlint, test]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master' || github.event_name == 'release'
@@ -111,6 +111,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install Podman
         run: |
@@ -125,16 +127,14 @@ jobs:
         id: slug
         run: echo "SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)" >> "$GITHUB_OUTPUT"
 
-      - name: Build and push container image
+      - name: Build and push deployment image
         run: |
-          # Build the image
           GITHUB_REPOSITORY="$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')"
-          podman build -t "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:latest" \
+          podman build -f deploy.Dockerfile \
+                       -t "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:latest" \
                        -t "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:${{ github.sha }}" \
                        -t "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:${{ steps.slug.outputs.SHORT_SHA }}" \
                        .
-
-          # Push all tags
           podman push "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:latest"
           podman push "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:${{ github.sha }}"
           podman push "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:${{ steps.slug.outputs.SHORT_SHA }}"
