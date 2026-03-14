@@ -33,9 +33,7 @@ class ImportValidator:
     def __init__(self, api_index) -> None:
         self.api = api_index
 
-    def validate_import(
-        self, import_statement: str, code_context: str = None
-    ) -> Dict[str, Any]:
+    def validate_import(self, import_statement: str, code_context: str = None) -> Dict[str, Any]:
         """Validate if an import statement is correct.
 
         Accepts three styles:
@@ -98,9 +96,7 @@ class ImportValidator:
             "suggested": None,
         }
 
-    def _validate_from_import(
-        self, import_statement: str, code_context: str = None
-    ) -> Dict[str, Any]:
+    def _validate_from_import(self, import_statement: str, code_context: str = None) -> Dict[str, Any]:
         """Validate 'from X import Y' style imports."""
         parts = import_statement.split("import")
         if len(parts) != 2:
@@ -135,25 +131,17 @@ class ImportValidator:
 
             if full_name in self.api.modules or possible_module in self.api.modules:
                 if code_context:
-                    used_classes = _extract_used_classes(
-                        code_context, set(self.api.classes.keys())
-                    )
+                    used_classes = _extract_used_classes(code_context, set(self.api.classes.keys()))
                     module_classes = self.api.get_module_classes(possible_module)
-                    classes_from_module = [
-                        c for c in used_classes if c in module_classes
-                    ]
+                    classes_from_module = [c for c in used_classes if c in module_classes]
 
                     if classes_from_module:
-                        modules_with_usage.append(
-                            (class_name, possible_module, classes_from_module)
-                        )
+                        modules_with_usage.append((class_name, possible_module, classes_from_module))
                     else:
                         modules_to_delete.append(class_name)
 
         if modules_to_delete or modules_with_usage:
-            return self._format_module_import_error(
-                import_statement, modules_to_delete, modules_with_usage
-            )
+            return self._format_module_import_error(import_statement, modules_to_delete, modules_with_usage)
 
         class_name = class_names[0]
         info = self.api.get_class_info(class_name)
@@ -182,8 +170,7 @@ class ImportValidator:
                 return {
                     "valid": True,
                     "message": (
-                        f"Import is valid (though importing from specific module "
-                        f"{correct_module} is preferred)"
+                        f"Import is valid (though importing from specific module {correct_module} is preferred)"
                     ),
                     "suggested": None,
                 }

@@ -141,9 +141,7 @@ class TestHTTPIntegration:
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
             futures = [executor.submit(make_request) for _ in range(3)]
-            results = [
-                future.result() for future in concurrent.futures.as_completed(futures)
-            ]
+            results = [future.result() for future in concurrent.futures.as_completed(futures)]
 
         # All requests should succeed
         assert all(results)

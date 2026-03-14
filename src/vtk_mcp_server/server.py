@@ -9,8 +9,8 @@ from typing import Optional
 import click
 from fastmcp import FastMCP
 
-from .vtk_scraper import VTKClassScraper
 from .import_validator import ImportValidator
+from .vtk_scraper import VTKClassScraper
 
 logger = logging.getLogger(__name__)
 
@@ -79,10 +79,7 @@ def get_vtk_class_info_python(class_name: str) -> str:
         return "Error: class_name is required"
 
     if _api_index is None:
-        return (
-            "Error: API index not loaded. "
-            "Start the server with --data-path pointing to vtk-python-docs.jsonl"
-        )
+        return "Error: API index not loaded. Start the server with --data-path pointing to vtk-python-docs.jsonl"
 
     try:
         info = _api_index.get_class_info(class_name)
@@ -163,10 +160,7 @@ def vector_search_vtk_examples(
         return "Error: query is required"
 
     if _retriever is None:
-        return (
-            "Error: Retriever not configured. "
-            "Start the server with --qdrant-url option."
-        )
+        return "Error: Retriever not configured. Start the server with --qdrant-url option."
 
     try:
         results = _retriever.hybrid_search(query, collection=collection, limit=top_k)
@@ -223,10 +217,7 @@ def _format_search_results(query: str, results) -> str:
 def _require_api_index() -> str:
     """Return error message if API index is not loaded, else empty string."""
     if _api_index is None:
-        return (
-            "Error: API index not loaded. "
-            "Start the server with --data-path pointing to vtk-python-docs.jsonl"
-        )
+        return "Error: API index not loaded. Start the server with --data-path pointing to vtk-python-docs.jsonl"
     return ""
 
 
@@ -304,9 +295,7 @@ def vtk_get_class_methods(class_name: str, method_name: str = None) -> str:
     methods = _api_index.get_class_methods(class_name)
     requested_method = None
     if method_name:
-        requested_method = next(
-            (m for m in methods if m["method_name"] == method_name), None
-        )
+        requested_method = next((m for m in methods if m["method_name"] == method_name), None)
         if not requested_method:
             method_info = _api_index.get_method_info(class_name, method_name)
             if method_info:
@@ -631,10 +620,7 @@ def _format_class_info(info: dict) -> str:
     if info.get("methods"):
         lines.append("## Public Methods")
         methods = info["methods"][:10]
-        lines.extend(
-            f"- **{m['name']}**: {m.get('description', 'No description')}"
-            for m in methods
-        )
+        lines.extend(f"- **{m['name']}**: {m.get('description', 'No description')}" for m in methods)
         if len(info["methods"]) > 10:
             lines.append(f"- ... and {len(info['methods']) - 10} more methods")
         lines.append("")

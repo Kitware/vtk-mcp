@@ -17,9 +17,7 @@ class TestStdioIntegration:
     def test_stdio_server_startup(self):
         """Test that stdio server can start and respond to basic commands."""
         # Get the path to the server module
-        server_path = os.path.join(
-            os.path.dirname(__file__), "..", "src", "vtk_mcp_server", "server.py"
-        )
+        server_path = os.path.join(os.path.dirname(__file__), "..", "src", "vtk_mcp_server", "server.py")
 
         # Start server process with stdio transport
         process = subprocess.Popen(
@@ -81,9 +79,7 @@ class TestStdioIntegration:
 
     def test_stdio_tools_list(self):
         """Test tools/list over stdio transport."""
-        server_path = os.path.join(
-            os.path.dirname(__file__), "..", "src", "vtk_mcp_server", "server.py"
-        )
+        server_path = os.path.join(os.path.dirname(__file__), "..", "src", "vtk_mcp_server", "server.py")
 
         process = subprocess.Popen(
             [sys.executable, server_path, "--transport", "stdio"],
@@ -128,9 +124,7 @@ class TestStdioIntegration:
 
     def test_stdio_tool_call_cpp(self):
         """Test calling C++ info tool over stdio."""
-        server_path = os.path.join(
-            os.path.dirname(__file__), "..", "src", "vtk_mcp_server", "server.py"
-        )
+        server_path = os.path.join(os.path.dirname(__file__), "..", "src", "vtk_mcp_server", "server.py")
 
         process = subprocess.Popen(
             [sys.executable, server_path, "--transport", "stdio"],
@@ -173,9 +167,7 @@ class TestStdioIntegration:
 
     def test_stdio_invalid_request(self):
         """Test stdio server handling of invalid requests."""
-        server_path = os.path.join(
-            os.path.dirname(__file__), "..", "src", "vtk_mcp_server", "server.py"
-        )
+        server_path = os.path.join(os.path.dirname(__file__), "..", "src", "vtk_mcp_server", "server.py")
 
         process = subprocess.Popen(
             [sys.executable, server_path, "--transport", "stdio"],
@@ -224,9 +216,7 @@ class TestStdioIntegration:
 
     def test_stdio_server_shutdown(self):
         """Test that stdio server shuts down gracefully."""
-        server_path = os.path.join(
-            os.path.dirname(__file__), "..", "src", "vtk_mcp_server", "server.py"
-        )
+        server_path = os.path.join(os.path.dirname(__file__), "..", "src", "vtk_mcp_server", "server.py")
 
         process = subprocess.Popen(
             [sys.executable, server_path, "--transport", "stdio"],

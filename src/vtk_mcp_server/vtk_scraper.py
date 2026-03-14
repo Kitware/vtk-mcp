@@ -1,4 +1,5 @@
 import re
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -57,9 +58,7 @@ class VTKClassScraper:
                 descriptions.append(text)
 
         if descriptions:
-            info["detailed_description"] = " ".join(
-                descriptions[:2]
-            )  # Take first 2 meaningful blocks
+            info["detailed_description"] = " ".join(descriptions[:2])  # Take first 2 meaningful blocks
 
         # Get inheritance information from inheritance diagram or class hierarchy
         inheritance_links = soup.find_all("a", href=re.compile(r"class.*\.html"))
@@ -92,9 +91,7 @@ class VTKClassScraper:
 
         # Approach 2: Look for method definition lists
         if not methods:
-            method_sections = soup.find_all(
-                ["h2", "h3"], string=re.compile(r"Member Function|Public.*Function")
-            )
+            method_sections = soup.find_all(["h2", "h3"], string=re.compile(r"Member Function|Public.*Function"))
             for section in method_sections:
                 next_elem = section.find_next_sibling()
                 while next_elem and next_elem.name not in ["h1", "h2", "h3"]:
@@ -104,8 +101,7 @@ class VTKClassScraper:
                             for link in method_links:
                                 method_name = link.get_text(strip=True)
                                 if method_name and not any(
-                                    x in method_name.lower()
-                                    for x in ["class", "struct", "enum"]
+                                    x in method_name.lower() for x in ["class", "struct", "enum"]
                                 ):
                                     methods.append(
                                         {
@@ -123,10 +119,7 @@ class VTKClassScraper:
                 if (
                     method_name
                     and len(method_name) > 2
-                    and not any(
-                        x in method_name.lower()
-                        for x in ["class", "struct", "enum", "typedef"]
-                    )
+                    and not any(x in method_name.lower() for x in ["class", "struct", "enum", "typedef"])
                 ):
                     # Try to get context for the method
                     parent = link.find_parent(["td", "div", "span"])
@@ -134,9 +127,7 @@ class VTKClassScraper:
                     methods.append(
                         {
                             "name": method_name,
-                            "description": (
-                                context[:200] if context else f"Method: {method_name}"
-                            ),
+                            "description": (context[:200] if context else f"Method: {method_name}"),
                         }
                     )
 
