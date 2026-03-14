@@ -166,7 +166,7 @@ class TestServerFunctionsPython:
 
     def test_get_vtk_class_info_python_success(self):
         """Test successful Python class info retrieval."""
-        # Since VTK is actually installed, let's test with real VTK
+        pytest.importorskip("vtk")
         result = get_vtk_class_info_python_func("vtkSphere")
 
         # Should return formatted Python API documentation
