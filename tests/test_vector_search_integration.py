@@ -11,7 +11,6 @@ import shutil
 from pathlib import Path
 from vtk_mcp_server.simple_client import SimpleVTKClient
 
-
 pytestmark = [pytest.mark.integration, pytest.mark.vector_search]
 
 

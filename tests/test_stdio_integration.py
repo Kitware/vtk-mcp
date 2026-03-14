@@ -8,7 +8,6 @@ import time
 import sys
 import os
 
-
 pytestmark = [pytest.mark.integration, pytest.mark.stdio]
 
 

@@ -28,6 +28,7 @@ _import_validator: Optional[ImportValidator] = None
 # C++ documentation tools (unchanged)
 # ---------------------------------------------------------------------------
 
+
 @mcp.tool()
 def get_vtk_class_info_cpp(class_name: str) -> str:
     """Get detailed information about a VTK class from online C++ docs."""
@@ -66,6 +67,7 @@ def search_vtk_classes(search_term: str) -> str:
 # Python API documentation tool (from vtk-data VTKAPIIndex)
 # ---------------------------------------------------------------------------
 
+
 @mcp.tool()
 def get_vtk_class_info_python(class_name: str) -> str:
     """Get Python API documentation for a VTK class from the pre-built API index.
@@ -89,24 +91,24 @@ def get_vtk_class_info_python(class_name: str) -> str:
 
         lines = [f"# Python API Documentation for {class_name}", ""]
 
-        class_doc = info.get('class_doc', '')
+        class_doc = info.get("class_doc", "")
         if class_doc:
             lines.extend(["## Class Documentation", "", class_doc, ""])
 
-        synopsis = info.get('synopsis', '')
+        synopsis = info.get("synopsis", "")
         if synopsis:
             lines.extend(["## Synopsis", "", synopsis, ""])
 
-        role = info.get('role', '')
+        role = info.get("role", "")
         if role:
             lines.extend(["## Pipeline Role", "", role, ""])
 
-        module = info.get('module', '')
+        module = info.get("module", "")
         if module:
             lines.extend(["## Module", "", f"`{module}`", ""])
 
-        input_dt = info.get('input_datatype', '')
-        output_dt = info.get('output_datatype', '')
+        input_dt = info.get("input_datatype", "")
+        output_dt = info.get("output_datatype", "")
         if input_dt or output_dt:
             lines.append("## Data Types")
             lines.append("")
@@ -116,11 +118,11 @@ def get_vtk_class_info_python(class_name: str) -> str:
                 lines.append(f"- **Output:** `{output_dt}`")
             lines.append("")
 
-        visibility = info.get('visibility_score', None)
+        visibility = info.get("visibility_score", None)
         if visibility is not None:
             lines.extend(["## Visibility Score", "", str(visibility), ""])
 
-        semantic_methods = info.get('semantic_methods', [])
+        semantic_methods = info.get("semantic_methods", [])
         if semantic_methods:
             lines.append("## Semantic Methods")
             lines.append("")
@@ -136,6 +138,7 @@ def get_vtk_class_info_python(class_name: str) -> str:
 # ---------------------------------------------------------------------------
 # Vector search tool (Qdrant hybrid search via vtk-data Retriever)
 # ---------------------------------------------------------------------------
+
 
 @mcp.tool()
 def vector_search_vtk_examples(
@@ -198,9 +201,8 @@ def _format_search_results(query: str, results) -> str:
         content = result.content.strip()
         if content:
             # Detect if content looks like Python code
-            is_code = (
-                result.collection == "vtk_code"
-                or any(kw in content for kw in ('import vtk', 'vtk.', 'vtkmodules'))
+            is_code = result.collection == "vtk_code" or any(
+                kw in content for kw in ("import vtk", "vtk.", "vtkmodules")
             )
             if is_code:
                 lines.append("```python")
@@ -216,6 +218,7 @@ def _format_search_results(query: str, results) -> str:
 # ---------------------------------------------------------------------------
 # Validation tools (ported from vtkapi-mcp, 18 tools)
 # ---------------------------------------------------------------------------
+
 
 def _require_api_index() -> str:
     """Return error message if API index is not loaded, else empty string."""
@@ -236,15 +239,15 @@ def vtk_get_class_info(class_name: str) -> str:
     info = _api_index.get_class_info(class_name)
     if info:
         result = {
-            "class_name": info['class_name'],
-            "module": info['module'],
-            "class_doc": info.get('class_doc', ''),
-            "synopsis": info.get('synopsis', ''),
-            "role": info.get('role', ''),
-            "visibility_score": info.get('visibility_score', ''),
-            "input_datatype": info.get('input_datatype', ''),
-            "output_datatype": info.get('output_datatype', ''),
-            "content": info['content'],
+            "class_name": info["class_name"],
+            "module": info["module"],
+            "class_doc": info.get("class_doc", ""),
+            "synopsis": info.get("synopsis", ""),
+            "role": info.get("role", ""),
+            "visibility_score": info.get("visibility_score", ""),
+            "input_datatype": info.get("input_datatype", ""),
+            "output_datatype": info.get("output_datatype", ""),
+            "content": info["content"],
         }
     else:
         result = {
@@ -302,7 +305,7 @@ def vtk_get_class_methods(class_name: str, method_name: str = None) -> str:
     requested_method = None
     if method_name:
         requested_method = next(
-            (m for m in methods if m['method_name'] == method_name), None
+            (m for m in methods if m["method_name"] == method_name), None
         )
         if not requested_method:
             method_info = _api_index.get_method_info(class_name, method_name)
@@ -345,12 +348,15 @@ def vtk_get_module_classes(module: str) -> str:
 def vtk_validate_import(import_statement: str) -> str:
     """Validate if a VTK import statement is correct and suggest corrections."""
     if _import_validator is None:
-        return json.dumps({
-            "error": (
-                "Import validator not available. "
-                "Start the server with --data-path pointing to vtk-python-docs.jsonl"
-            )
-        }, indent=2)
+        return json.dumps(
+            {
+                "error": (
+                    "Import validator not available. "
+                    "Start the server with --data-path pointing to vtk-python-docs.jsonl"
+                )
+            },
+            indent=2,
+        )
 
     result = _import_validator.validate_import(import_statement)
     return json.dumps(result, indent=2)
@@ -461,7 +467,11 @@ def vtk_get_class_action_phrase(class_name: str) -> str:
 
     action_phrase = _api_index.get_class_action_phrase(class_name)
     if action_phrase is not None:
-        result = {"class_name": class_name, "action_phrase": action_phrase, "found": True}
+        result = {
+            "class_name": class_name,
+            "action_phrase": action_phrase,
+            "found": True,
+        }
     else:
         result = {
             "error": f"Class '{class_name}' not found in VTK API",
@@ -522,7 +532,11 @@ def vtk_get_class_input_datatype(class_name: str) -> str:
 
     input_datatype = _api_index.get_class_input_datatype(class_name)
     if input_datatype is not None:
-        result = {"class_name": class_name, "input_datatype": input_datatype, "found": True}
+        result = {
+            "class_name": class_name,
+            "input_datatype": input_datatype,
+            "found": True,
+        }
     else:
         result = {
             "error": f"Class '{class_name}' not found in VTK API",
@@ -597,6 +611,7 @@ def vtk_is_a_class(class_name: str) -> str:
 # Formatting helpers
 # ---------------------------------------------------------------------------
 
+
 def _format_class_info(info: dict) -> str:
     """Format C++ class info into readable markdown."""
     lines = [f"# {info['class_name']}", ""]
@@ -632,6 +647,7 @@ def _format_class_info(info: dict) -> str:
 # CLI entry point
 # ---------------------------------------------------------------------------
 
+
 @click.command()
 @click.option(
     "--transport",
@@ -658,6 +674,7 @@ def main(transport, host, port, data_path, qdrant_url):
     if data_path:
         try:
             from vtk_data.index import VTKAPIIndex
+
             _api_index = VTKAPIIndex(Path(data_path))
             _import_validator = ImportValidator(_api_index)
             click.echo(f"Loaded VTK API index from: {data_path}")
@@ -674,6 +691,7 @@ def main(transport, host, port, data_path, qdrant_url):
     if qdrant_url:
         try:
             from vtk_data.retriever import Retriever
+
             _retriever = Retriever(qdrant_url=qdrant_url)
             click.echo(f"Connected to Qdrant at: {qdrant_url}")
         except ImportError:

@@ -9,7 +9,6 @@ from unittest.mock import patch
 from vtk_mcp_server.server import mcp
 from vtk_mcp_server.simple_client import SimpleVTKClient
 
-
 pytestmark = [pytest.mark.integration, pytest.mark.http]
 
 
