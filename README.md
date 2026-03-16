@@ -86,7 +86,7 @@ After downloading and extracting the database, start the server with the databas
 
 ```bash
 # Install RAG dependencies
-pip install -r rag-components/requirements.txt
+pip install vtk-data[rag]
 
 # Start server with vector search enabled
 vtk-mcp-server --transport http --database-path ./db/vtk-examples
