@@ -67,17 +67,12 @@ class VTKDocumentationClient:
                     }
                 )
             elif matching_classes:
-                print(
-                    f"Found {len(matching_classes)} VTK classes "
-                    f"matching '{search_pattern}':"
-                )
+                print(f"Found {len(matching_classes)} VTK classes matching '{search_pattern}':")
                 print()
                 for class_idx, vtk_class in enumerate(matching_classes, 1):
                     print(f"{class_idx}. {vtk_class}")
                 print()
-                print(
-                    "Use get_class_info with any class name for detailed information."
-                )
+                print("Use get_class_info with any class name for detailed information.")
             else:
                 print(f"No VTK classes found matching '{search_pattern}'")
         except Exception as search_error:
@@ -115,9 +110,7 @@ class VTKDocumentationClient:
                             "parameters": {
                                 "search_term": {
                                     "type": "string",
-                                    "description": (
-                                        "Pattern to search for in class names"
-                                    ),
+                                    "description": ("Pattern to search for in class names"),
                                 }
                             },
                         },
@@ -160,10 +153,7 @@ class VTKDocumentationClient:
             print()
 
         if class_metadata.get("inheritance"):
-            print(
-                f"Inheritance hierarchy "
-                f"({len(class_metadata['inheritance'])} parent classes):"
-            )
+            print(f"Inheritance hierarchy ({len(class_metadata['inheritance'])} parent classes):")
             for parent_class in class_metadata["inheritance"][:8]:
                 print(f"  └─ {parent_class}")
             if len(class_metadata["inheritance"]) > 8:
@@ -212,9 +202,7 @@ Usage examples:
         metavar="PATTERN",
         help="Search for VTK classes matching pattern",
     )
-    command_group.add_argument(
-        "--list", "-l", action="store_true", help="List available commands"
-    )
+    command_group.add_argument("--list", "-l", action="store_true", help="List available commands")
 
     argument_parser.add_argument(
         "--json",

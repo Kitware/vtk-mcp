@@ -2,6 +2,7 @@
 
 import json
 import sys
+
 import click
 import requests
 
@@ -55,9 +56,7 @@ class SimpleVTKClient:
             headers["Mcp-Session-Id"] = self.session_id
 
         try:
-            response = requests.post(
-                f"{self.base_url}/mcp/", json=payload, headers=headers
-            )
+            response = requests.post(f"{self.base_url}/mcp/", json=payload, headers=headers)
             if response.status_code != 200:
                 print(f"HTTP {response.status_code}: {response.text}")
                 return None
@@ -133,9 +132,7 @@ class SimpleVTKClient:
             result = self._parse_response(response)
             self._handle_tool_response(result)
 
-    def vector_search_vtk_examples(
-        self, query, collection_name="vtk-examples", top_k=5
-    ):
+    def vector_search_vtk_examples(self, query, collection_name="vtk-examples", top_k=5):
         """Search VTK examples using vector search"""
         payload = {
             "jsonrpc": "2.0",

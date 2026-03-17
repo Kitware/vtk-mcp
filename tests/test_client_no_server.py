@@ -94,9 +94,7 @@ class TestClientWithoutServer:
             rsps.add(responses.POST, "http://localhost:8000/mcp/", body="OK")
 
             # Mock malformed response
-            rsps.add(
-                responses.POST, "http://localhost:8000/mcp/", body="data: invalid json"
-            )
+            rsps.add(responses.POST, "http://localhost:8000/mcp/", body="data: invalid json")
 
             client = SimpleVTKClient("http://localhost:8000")
 

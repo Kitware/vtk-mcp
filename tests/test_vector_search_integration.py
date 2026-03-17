@@ -11,7 +11,6 @@ import shutil
 from pathlib import Path
 from vtk_mcp_server.simple_client import SimpleVTKClient
 
-
 pytestmark = [pytest.mark.integration, pytest.mark.vector_search]
 
 
@@ -156,9 +155,7 @@ class TestVectorSearchIntegration:
 
         response = client._make_request(payload)
         assert response is not None, "Vector search request failed"
-        assert (
-            response.status_code == 200
-        ), f"Unexpected status code: {response.status_code}"
+        assert response.status_code == 200, f"Unexpected status code: {response.status_code}"
 
         result = client._parse_response(response)
         assert result is not None, "Failed to parse response"
@@ -171,9 +168,9 @@ class TestVectorSearchIntegration:
         assert "vtk" in content.lower(), "Results don't mention VTK"
 
         # Verify we got actual results
-        assert (
-            "Code Examples" in content or "Documentation Snippets" in content
-        ), "No code examples or documentation found"
+        assert "Code Examples" in content or "Documentation Snippets" in content, (
+            "No code examples or documentation found"
+        )
 
     def test_vector_search_with_different_top_k(self, vector_search_server):
         """Test vector search with different top_k values."""

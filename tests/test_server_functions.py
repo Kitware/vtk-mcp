@@ -4,7 +4,6 @@ import pytest
 from unittest.mock import patch, MagicMock
 import io
 
-
 pytestmark = pytest.mark.unit
 
 
@@ -39,10 +38,7 @@ def get_vtk_class_info_cpp_func(class_name: str) -> str:
         if info.get("methods"):
             lines.append("## Public Methods")
             methods = info["methods"][:10]
-            lines.extend(
-                f"- **{m['name']}**: {m.get('description', 'No description')}"
-                for m in methods
-            )
+            lines.extend(f"- **{m['name']}**: {m.get('description', 'No description')}" for m in methods)
             if len(info["methods"]) > 10:
                 lines.append(f"- ... and {len(info['methods']) - 10} more methods")
             lines.append("")
@@ -86,15 +82,10 @@ def get_vtk_class_info_python_func(class_name: str) -> str:
             return f"No help documentation available for '{class_name}'"
 
         # Format the output nicely
-        return (
-            f"# Python API Documentation for {class_name}\n\n" f"```\n{help_text}\n```"
-        )
+        return f"# Python API Documentation for {class_name}\n\n```\n{help_text}\n```"
 
     except ImportError:
-        return (
-            "Error: VTK Python package is not installed. "
-            "Install with 'pip install vtk'"
-        )
+        return "Error: VTK Python package is not installed. Install with 'pip install vtk'"
     except Exception as e:
         return f"Error getting Python help for '{class_name}': {str(e)}"
 
@@ -175,7 +166,7 @@ class TestServerFunctionsPython:
 
     def test_get_vtk_class_info_python_success(self):
         """Test successful Python class info retrieval."""
-        # Since VTK is actually installed, let's test with real VTK
+        pytest.importorskip("vtk")
         result = get_vtk_class_info_python_func("vtkSphere")
 
         # Should return formatted Python API documentation
