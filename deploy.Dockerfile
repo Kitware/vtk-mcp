@@ -1,46 +1,61 @@
-LABEL org.opencontainers.image.title="VTK MCP Server with Embeddings"
-LABEL org.opencontainers.image.description="Model Context Protocol server for VTK with vector search embeddings"
-LABEL org.opencontainers.image.source="https://github.com/kitware/vtk-mcp"
-LABEL org.opencontainers.image.authors="Vicente Adolfo Bolea Sanchez <vicente.bolea@kitware.com>"
-LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.documentation="https://github.com/kitware/vtk-mcp/blob/main/README.md"
-
-FROM python:3.12-slim AS embeddings
-
-# Download embeddings database from GHCR
-COPY --from=ghcr.io/kitware/vtk-mcp/embeddings-database:latest /vtk-examples-embeddings.tar.gz /tmp/
-
-# Extract the database
-RUN mkdir -p /app/db && \
-    tar -xzf /tmp/vtk-examples-embeddings.tar.gz -C /app/db && \
-    rm /tmp/vtk-examples-embeddings.tar.gz
-
-FROM python:3.12-slim
+FROM python:3.12-slim AS builder
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# Install system dependencies for VTK
-RUN apt update && \
-    apt install --no-install-recommends --no-install-suggests -y \
-    libgl1-mesa-dev \
-    libxrender-dev/stable \
-    git && \
+# VTK requires OpenGL libraries at introspection time
+RUN apt-get update && \
+    apt-get install --no-install-recommends --no-install-suggests -y \
+        libgl1-mesa-dev \
+        libxrender1 \
+        git && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Install vtk-data with extraction dependencies (VTK + LiteLLM)
+RUN pip install "git+https://github.com/vicentebolea/vtk-data.git#egg=vtk-data[extract]"
+
+# Build the VTK API docs database.
+# Requires LITELLM_API_KEY (or equivalent) as a build secret.
+RUN --mount=type=secret,id=llm_api_key \
+    export OPENAI_API_KEY=$(cat /run/secrets/llm_api_key) && \
+    vtk-data extract --output /build/vtk-python-docs.jsonl
+
+
+FROM python:3.12-slim
+
+LABEL org.opencontainers.image.title="VTK MCP Server"
+LABEL org.opencontainers.image.description="Model Context Protocol server for VTK documentation"
+LABEL org.opencontainers.image.source="https://github.com/kitware/vtk-mcp"
+LABEL org.opencontainers.image.licenses="MIT"
+
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VTK_DATA_PATH=/app/data/vtk-python-docs.jsonl
+
+RUN apt-get update && \
+    apt-get install --no-install-recommends --no-install-suggests -y git && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy application code
+# Install vtk-mcp and vtk-data[rag] (Qdrant retriever)
 COPY . .
-
-# Copy embeddings database from first stage
-COPY --from=embeddings /app/db /app/db
-
-# Install Python dependencies (including RAG dependencies)
 RUN pip install --upgrade pip && \
-    pip install --verbose .
+    pip install "git+https://github.com/vicentebolea/vtk-data.git#egg=vtk-data[rag]" && \
+    pip install .
 
-# Start server with database path configured
-CMD ["vtk-mcp-server", "--transport", "http", "--host", "0.0.0.0", "--port", "8000", "--database-path", "/app/db/vtk-examples"]
+# Copy the pre-built VTK API docs database from builder stage
+RUN mkdir -p /app/data
+COPY --from=builder /build/vtk-python-docs.jsonl /app/data/vtk-python-docs.jsonl
+
+CMD ["vtk-mcp-server", \
+     "--transport", "http", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--data-path", "/app/data/vtk-python-docs.jsonl"]
