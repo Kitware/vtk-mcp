@@ -1,3 +1,7 @@
+ARG DATABASE_IMAGE=ghcr.io/vicentebolea/vtk-data-database:latest
+
+FROM ${DATABASE_IMAGE} AS database
+
 FROM python:3.12-slim AS builder
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -18,9 +22,6 @@ WORKDIR /build
 # Install vtk-data with extraction dependencies (VTK + LiteLLM)
 RUN pip install "vtk-data[extract] @ git+https://github.com/vicentebolea/vtk-data.git"
 
-# Copy build context so a pre-existing JSONL can be used
-COPY . /context/
-
 # Two modes, controlled by build arg:
 #
 #   SKIP_EXTRACT=false (default)
@@ -29,17 +30,18 @@ COPY . /context/
 #       podman build --secret id=llm_api_key,src=~/.llm_api_key -f deploy.Dockerfile .
 #
 #   SKIP_EXTRACT=true
-#     Copies vtk-python-docs.jsonl from the build context instead.
+#     Copies vtk-python-docs.jsonl from the pre-built database image.
 #     Build command:
-#       cp /path/to/vtk-python-docs.jsonl .
 #       podman build --build-arg SKIP_EXTRACT=true -f deploy.Dockerfile .
 ARG SKIP_EXTRACT=false
+
+COPY --from=database /vtk-python-docs.jsonl /build/docs/vtk-python-docs.jsonl.cached
 
 RUN --mount=type=secret,id=llm_api_key,required=false \
     mkdir -p /build/docs && \
     if [ "$SKIP_EXTRACT" = "true" ]; then \
-        echo "Using existing database from build context..." && \
-        cp /context/vtk-python-docs.jsonl /build/docs/vtk-python-docs.jsonl; \
+        echo "Using existing database from image..." && \
+        cp /build/docs/vtk-python-docs.jsonl.cached /build/docs/vtk-python-docs.jsonl; \
     else \
         export OPENAI_API_KEY=$(cat /run/secrets/llm_api_key 2>/dev/null || true) && \
         vtk-data extract --output /build; \
