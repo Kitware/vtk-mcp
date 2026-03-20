@@ -38,7 +38,6 @@ ARG SKIP_EXTRACT=false
 COPY --from=database /vtk-python-docs.jsonl /build/docs/vtk-python-docs.jsonl.cached
 
 RUN --mount=type=secret,id=llm_api_key,required=false \
-    mkdir -p /build/docs && \
     if [ "$SKIP_EXTRACT" = "true" ]; then \
         echo "Using existing database from image..." && \
         cp /build/docs/vtk-python-docs.jsonl.cached /build/docs/vtk-python-docs.jsonl; \
@@ -73,8 +72,6 @@ RUN pip install --upgrade pip && \
     pip install "vtk-data[rag] @ git+https://github.com/vicentebolea/vtk-data.git" && \
     pip install .
 
-# Copy the database from builder stage
-RUN mkdir -p /app/data
 COPY --from=builder /build/docs/vtk-python-docs.jsonl /app/data/vtk-python-docs.jsonl
 
 CMD ["vtk-mcp-server", \

@@ -19,7 +19,6 @@ RUN pip install --upgrade pip && \
     pip install "vtk-data[rag] @ git+https://github.com/vicentebolea/vtk-data.git" && \
     pip install .
 
-RUN mkdir -p /app/data
 COPY vtk-python-docs.jsonl /app/data/vtk-python-docs.jsonl
 
 CMD ["vtk-mcp-server", \
