@@ -16,13 +16,14 @@ RUN apt-get update && \
 WORKDIR /build
 
 # Install vtk-data with extraction dependencies (VTK + LiteLLM)
-RUN pip install "git+https://github.com/vicentebolea/vtk-data.git#egg=vtk-data[extract]"
+RUN pip install "vtk-data[extract] @ git+https://github.com/vicentebolea/vtk-data.git"
 
 # Build the VTK API docs database.
-# Requires LITELLM_API_KEY (or equivalent) as a build secret.
+# Requires an LLM API key as a build secret (used by vtk-data extract for enrichment).
+# Output: /build/docs/vtk-python-docs.jsonl
 RUN --mount=type=secret,id=llm_api_key \
     export OPENAI_API_KEY=$(cat /run/secrets/llm_api_key) && \
-    vtk-data extract --output /build/vtk-python-docs.jsonl
+    vtk-data extract --output /build
 
 
 FROM python:3.12-slim
@@ -47,12 +48,13 @@ WORKDIR /app
 # Install vtk-mcp and vtk-data[rag] (Qdrant retriever)
 COPY . .
 RUN pip install --upgrade pip && \
-    pip install "git+https://github.com/vicentebolea/vtk-data.git#egg=vtk-data[rag]" && \
+    pip install torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install "vtk-data[rag] @ git+https://github.com/vicentebolea/vtk-data.git" && \
     pip install .
 
 # Copy the pre-built VTK API docs database from builder stage
 RUN mkdir -p /app/data
-COPY --from=builder /build/vtk-python-docs.jsonl /app/data/vtk-python-docs.jsonl
+COPY --from=builder /build/docs/vtk-python-docs.jsonl /app/data/vtk-python-docs.jsonl
 
 CMD ["vtk-mcp-server", \
      "--transport", "http", \
