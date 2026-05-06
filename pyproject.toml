@@ -1,8 +1,8 @@
 [project]
-name = "vtk-mcp-server"
-dynamic = ["version"]
-description = "MCP server for VTK class documentation"
-authors = [{name = "Vicente Adolfo Bolea Sanchez", email = "vicente.bolea@kitware.com"}]
+name = "vtk-mcp"
+version = "1.0.0"
+description = "Production MCP gateway composing vtk-knowledge, vtk-index, and vtk-validate"
+authors = [{name = "Patrick O'Leary"}, {name = "Vicente Adolfo Bolea Sanchez", email = "vicente.bolea@kitware.com"}]
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.10"
@@ -20,21 +20,23 @@ classifiers = [
 ]
 dependencies = [
     "fastmcp>=2.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
     "beautifulsoup4>=4.12.0",
-    "importlib_resources>=5.0.0",
     "requests>=2.31.0",
     "lxml>=4.9.0",
     "click>=8.0.0",
-    "chromadb==0.6.3",
-    "sentence-transformers==3.4.1",
-    "vtk",
+    "vtk-knowledge>=1.0.0",
+    "vtk-validate>=1.0.0",
 ]
 
 [project.scripts]
-vtk-mcp-server = "vtk_mcp_server.server:main"
-vtk-mcp-client = "vtk_mcp_server.simple_client:main"
+vtk-mcp = "vtk_mcp.__main__:main"
 
 [project.optional-dependencies]
+retrieval = [
+    "vtk-index>=1.0.0",
+]
 test = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
@@ -45,16 +47,15 @@ test = [
 
 [project.urls]
 Homepage = "https://github.com/kitware/vtk-mcp"
-Documentation = "https://github.com/kitware/vtk-mcp/blob/master/README.md"
 Repository = "https://github.com/kitware/vtk-mcp"
 Issues = "https://github.com/kitware/vtk-mcp/issues"
 
 [build-system]
-requires = ["setuptools>=61.0", "setuptools-scm>=8.0"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools_scm]
-fallback_version = "0.1.0"
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

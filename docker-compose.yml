@@ -1,0 +1,25 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  vtk-mcp:
+    build: .
+    environment:
+      VTK_MCP_TRANSPORT: http
+      VTK_MCP_HTTP_PORT: "8000"
+      VTK_MCP_ENABLE_RETRIEVAL: "true"
+      VTK_MCP_QDRANT_URL: http://qdrant:6333
+      VTK_MCP_KNOWLEDGE_ARTIFACT_PATH: /app/data/vtk-knowledge.jsonl
+    ports:
+      - "8000:8000"
+    depends_on:
+      - qdrant
+    volumes:
+      - ./data:/app/data:ro
+
+volumes:
+  qdrant_data:
