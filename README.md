@@ -130,7 +130,7 @@ Then add to `.claude/settings.json` (project) or `~/.claude/settings.json` (glob
   "mcpServers": {
     "vtk": {
       "type": "http",
-      "url": "http://localhost:8000/mcp/"
+      "url": "http://localhost:8000/mcp"
     }
   }
 }
@@ -147,7 +147,7 @@ vtk-mcp --transport http --port 8000 --vtk-version 9.6.1 &
   "mcpServers": {
     "vtk": {
       "type": "http",
-      "url": "http://localhost:8000/mcp/"
+      "url": "http://localhost:8000/mcp"
     }
   }
 }
