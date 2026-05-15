@@ -36,6 +36,7 @@ dependencies = [
 
 [project.scripts]
 vtk-mcp = "vtk_mcp.__main__:main"
+vtk-mcp-client = "vtk_mcp.client:main"
 
 [project.optional-dependencies]
 retrieval = [
