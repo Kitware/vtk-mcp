@@ -115,32 +115,39 @@ AST-based validation against the VTK API. Checks imports, constructors, method c
 
 ## Claude Code integration
 
-Add to your project's `.claude/settings.json` (or `~/.claude/settings.json` for global use):
+### With the pre-built container (recommended)
+
+Start the container once; Claude Code connects over HTTP:
+
+```bash
+podman run -d --rm -p 8000:8000 --name vtk-mcp ghcr.io/kitware/vtk-mcp/vtk-mcp:latest
+```
+
+Then add to `.claude/settings.json` (project) or `~/.claude/settings.json` (global):
 
 ```json
 {
   "mcpServers": {
     "vtk": {
-      "type": "stdio",
-      "command": "vtk-mcp",
-      "args": ["--vtk-version", "9.6.1"]
+      "type": "http",
+      "url": "http://localhost:8000/mcp/"
     }
   }
 }
 ```
 
-Or use the pre-built container image (no local install required):
+### With a local install
+
+```bash
+vtk-mcp --transport http --port 8000 --vtk-version 9.6.1 &
+```
 
 ```json
 {
   "mcpServers": {
     "vtk": {
-      "type": "stdio",
-      "command": "podman",
-      "args": [
-        "run", "--rm", "-i",
-        "ghcr.io/kitware/vtk-mcp/vtk-mcp:latest"
-      ]
+      "type": "http",
+      "url": "http://localhost:8000/mcp/"
     }
   }
 }

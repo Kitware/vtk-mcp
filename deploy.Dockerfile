@@ -37,8 +37,12 @@ RUN uv pip install --system -e ".[retrieval]"
 COPY scripts/prefetch_artifacts.py /tmp/prefetch_artifacts.py
 RUN python /tmp/prefetch_artifacts.py
 
-ENV VTK_MCP_TRANSPORT=stdio
+ENV VTK_MCP_TRANSPORT=http
+ENV VTK_MCP_HTTP_HOST=0.0.0.0
+ENV VTK_MCP_HTTP_PORT=8000
 ENV VTK_MCP_ENABLE_VALIDATION=true
 ENV VTK_MCP_ENABLE_RETRIEVAL=true
 
-ENTRYPOINT ["python", "-m", "vtk_mcp"]
+EXPOSE 8000
+
+ENTRYPOINT ["python", "-m", "vtk_mcp", "--transport", "http"]
