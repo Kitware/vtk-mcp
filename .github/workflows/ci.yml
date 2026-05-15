@@ -114,7 +114,7 @@ jobs:
       - name: Build and push deployment image
         run: |
           GITHUB_REPOSITORY="$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')"
-          podman build -f deploy.Dockerfile \
+          podman build -f Dockerfile \
                        -t "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:latest" \
                        -t "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:${{ github.sha }}" \
                        -t "ghcr.io/${GITHUB_REPOSITORY}/vtk-mcp:${{ steps.slug.outputs.SHORT_SHA }}" \
