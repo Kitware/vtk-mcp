@@ -109,3 +109,19 @@ def vtk_get_class_visibility(class_name: str, ctx: "VTKMCPContext"):
     from vtk_validate.tools import vtk_get_class_visibility as _f
 
     return _f(class_name, ctx.api_index)
+
+
+def vtk_get_class_inheritance(class_name: str, ctx: "VTKMCPContext") -> list:
+    r = ctx.api_index.get_class(class_name)
+    return r.inheritance if r else []
+
+
+def vtk_get_class_record_metadata(class_name: str, ctx: "VTKMCPContext") -> dict:
+    r = ctx.api_index.get_class(class_name)
+    if r is None:
+        return {"error": f"Class '{class_name}' not found."}
+    return {
+        "vtk_version": r.vtk_version,
+        "schema_version": r.schema_version,
+        "content_hash": r.content_hash,
+    }

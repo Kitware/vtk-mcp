@@ -56,7 +56,7 @@ Data comes from the vtk-knowledge artifact; the query helpers are implemented in
 
 | Tool | Description |
 |---|---|
-| `get_vtk_class_info_python(class_name)` | Full Python API record for a VTK class |
+| `vtk_get_class_info(class_name)` | Full class record (all fields below as one call) |
 | `vtk_search_classes(query, limit)` | Search classes by name or keyword |
 | `vtk_get_class_doc(class_name)` | Docstring for a class |
 | `vtk_get_class_synopsis(class_name)` | One-sentence synopsis |
@@ -73,7 +73,9 @@ Data comes from the vtk-knowledge artifact; the query helpers are implemented in
 | `vtk_is_a_class(class_name)` | Check if a name is a valid VTK class |
 | `vtk_get_class_action_phrase(class_name)` | Action phrase (e.g. "mesh smoothing") |
 | `vtk_get_class_visibility(class_name)` | Visibility score 0.0–1.0 |
-| `vtk_version_info()` | VTK version and enabled features |
+| `vtk_get_class_inheritance(class_name)` | Full MRO chain |
+| `vtk_get_class_record_metadata(class_name)` | `{vtk_version, schema_version, content_hash}` |
+| `vtk_version_info()` | VTK version and enabled features for the loaded index |
 
 ### Semantic search — via [vtk-index](https://github.com/vicentebolea/vtk-index)
 
@@ -104,12 +106,6 @@ AST-based validation against the VTK API. Checks imports, constructors, method c
 | `validate_vtk_code(source)` | Validate a Python source string; returns `{status, diagnostics, vtk_version, elapsed_ms}` |
 | `vtk_validate_import(import_statement)` | Validate a single import line and suggest corrections |
 
-### C++ documentation scraping
-
-| Tool | Description |
-|---|---|
-| `get_vtk_class_info_cpp(class_name)` | Scrape C++ docs from vtk.org |
-| `search_vtk_classes_cpp(search_term)` | Search C++ documentation |
 
 ## Docker
 

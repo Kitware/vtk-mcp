@@ -27,8 +27,8 @@ def _ctx() -> VTKMCPContext:
 
 
 @mcp.tool()
-def get_vtk_class_info_python(class_name: str) -> dict:
-    """Get Python API info for a VTK class (module, methods, synopsis, role, etc.)."""
+def vtk_get_class_info(class_name: str) -> dict:
+    """Get the full VTK class record (module, role, methods, synopsis, inheritance, etc.)."""
     from .tools.docs import get_vtk_class_info_python as _f
 
     return _f(class_name, _ctx())
@@ -162,6 +162,25 @@ def vtk_get_class_visibility(class_name: str) -> float | None:
     return _f(class_name, _ctx())
 
 
+@mcp.tool()
+def vtk_get_class_inheritance(class_name: str) -> list:
+    """Get the full MRO (method resolution order) chain for a VTK class."""
+    from .tools.docs import vtk_get_class_inheritance as _f
+
+    return _f(class_name, _ctx())
+
+
+@mcp.tool()
+def vtk_get_class_record_metadata(class_name: str) -> dict:
+    """Get versioning and integrity metadata for a VTK class record.
+
+    Returns vtk_version, schema_version, and content_hash.
+    """
+    from .tools.docs import vtk_get_class_record_metadata as _f
+
+    return _f(class_name, _ctx())
+
+
 # ── Layer 2: Retrieval ─────────────────────────────────────────────────────
 
 
@@ -229,25 +248,6 @@ def vtk_validate_import(import_statement: str) -> dict:
     from .tools.validation import vtk_validate_import as _f
 
     return _f(import_statement, _ctx())
-
-
-# ── C++ scraping (self-contained, no layer dependency) ─────────────────────
-
-
-@mcp.tool()
-def get_vtk_class_info_cpp(class_name: str) -> str:
-    """Get detailed information about a VTK class from the online C++ docs."""
-    from .tools.scraping import get_vtk_class_info_cpp as _f
-
-    return _f(class_name, _ctx())
-
-
-@mcp.tool()
-def search_vtk_classes_cpp(search_term: str) -> str:
-    """Search for VTK classes in the C++ documentation."""
-    from .tools.scraping import search_vtk_classes_cpp as _f
-
-    return _f(search_term, _ctx())
 
 
 # ── Meta ───────────────────────────────────────────────────────────────────
