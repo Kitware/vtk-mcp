@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 FROM python:3.12-slim
 
 LABEL org.opencontainers.image.title="VTK MCP Gateway"
@@ -14,6 +13,10 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
 # VTK version to pre-cache at image build time
 ARG VTK_VERSION=9.3.0
 ENV VTK_MCP_VTK_VERSION=${VTK_VERSION}
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -31,19 +34,8 @@ RUN uv pip install --system -e ".[retrieval]"
 
 # Pre-download the vtk-knowledge JSONL artifact and vtk-index embedded
 # Qdrant storage so the image is ready to serve without network access.
-RUN python - <<'EOF'
-import logging
-logging.basicConfig(level=logging.INFO)
-import os
-vtk_version = os.environ["VTK_MCP_VTK_VERSION"]
-from vtk_knowledge import VTKAPIIndex
-VTKAPIIndex.from_artifact(vtk_version)
-try:
-    from vtk_index import Retriever
-    Retriever.from_artifact(vtk_version)
-except Exception as e:
-    logging.warning("vtk-index embedded storage skipped: %s", e)
-EOF
+COPY scripts/prefetch_artifacts.py /tmp/prefetch_artifacts.py
+RUN python /tmp/prefetch_artifacts.py
 
 ENV VTK_MCP_TRANSPORT=stdio
 ENV VTK_MCP_ENABLE_VALIDATION=true
