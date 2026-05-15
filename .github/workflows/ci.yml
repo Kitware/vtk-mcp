@@ -19,16 +19,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - name: Install dependencies
-        run: uv sync --extra dev
+        run: |
+          pip install \
+            "git+https://github.com/vicentebolea/vtk-knowledge" \
+            "git+https://github.com/vicentebolea/vtk-validate"
+          pip install -e ".[dev]"
 
       - name: ruff lint
-        run: uv run ruff check src/vtk_mcp/
+        run: ruff check src/vtk_mcp/
 
       - name: ruff format check
-        run: uv run ruff format --check src/vtk_mcp/
+        run: ruff format --check src/vtk_mcp/
 
   actionlint:
     runs-on: ubuntu-latest
@@ -54,21 +60,39 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --extra dev
+        run: |
+          pip install \
+            "git+https://github.com/vicentebolea/vtk-knowledge" \
+            "git+https://github.com/vicentebolea/vtk-validate"
+          pip install -e ".[dev]"
 
       - name: Run unit tests
-        run: uv run pytest -m unit -v
+        run: pytest -m unit -v
 
       - name: Run client tests
-        run: uv run pytest tests/test_client_no_server.py -v
+        run: pytest tests/test_client_no_server.py -v
 
       - name: Run integration tests
-        run: uv run pytest -m integration -v
+        run: pytest -m integration -v
+
+  uv-smoke:
+    name: uv smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: uv sync resolves all dependencies
+        run: uv sync --extra dev
+
+      - name: Import check
+        run: uv run python -c "from vtk_mcp.config import Settings; Settings()"
 
   docker-deploy:
     name: Build and Push Deployment Image
