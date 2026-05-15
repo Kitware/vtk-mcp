@@ -21,4 +21,5 @@ def validate_vtk_code(source: str, ctx: "VTKMCPContext") -> dict[str, Any]:
 
 def vtk_validate_import(import_statement: str, ctx: "VTKMCPContext") -> dict[str, Any]:
     from vtk_validate.tools import vtk_validate_import as _f
+
     return _f(import_statement, ctx.api_index)

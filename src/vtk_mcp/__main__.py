@@ -17,16 +17,31 @@ import click
     "--knowledge-artifact",
     envvar="VTK_MCP_KNOWLEDGE_ARTIFACT_PATH",
     type=click.Path(exists=True),
-    help="Path to the vtk-knowledge JSONL artifact.",
+    help="Path to a local vtk-knowledge JSONL artifact (skips auto-download).",
 )
-def main(transport: str, host: str, port: int, knowledge_artifact: str | None) -> None:
+@click.option(
+    "--vtk-version",
+    envvar="VTK_MCP_VTK_VERSION",
+    default="9.3.0",
+    show_default=True,
+    help="VTK version to fetch from ghcr.io when no local artifact is given.",
+)
+def main(
+    transport: str,
+    host: str,
+    port: int,
+    knowledge_artifact: str | None,
+    vtk_version: str,
+) -> None:
     """Run the VTK MCP gateway server."""
     import os
-    from .config import Settings
+
     from .composition import init_context
+    from .config import Settings
 
     if knowledge_artifact:
         os.environ["VTK_MCP_KNOWLEDGE_ARTIFACT_PATH"] = knowledge_artifact
+    os.environ.setdefault("VTK_MCP_VTK_VERSION", vtk_version)
 
     settings = Settings()
     init_context(settings)
@@ -34,9 +49,11 @@ def main(transport: str, host: str, port: int, knowledge_artifact: str | None) -
     if transport == "http":
         click.echo(f"Starting vtk-mcp on http://{host}:{port}")
         from .transport.http import run
+
         run(host=host, port=port)
     else:
         from .transport.stdio import run
+
         run()
 
 

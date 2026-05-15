@@ -5,17 +5,23 @@ All parameters are configured via environment variables prefixed with
 """
 
 from pathlib import Path
+from typing import Optional
+
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     # Layer 1 — knowledge artifact
-    knowledge_artifact_path: Path = Path("/app/data/vtk-knowledge.jsonl")
+    # When None, the artifact is downloaded automatically via VTKAPIIndex.from_artifact().
+    knowledge_artifact_path: Optional[Path] = None
     vtk_version: str = "9.3.0"
 
     # Layer 2 — retrieval
-    enable_retrieval: bool = True
-    qdrant_url: str = "http://qdrant:6333"
+    # When enable_retrieval is True and vtk_version is set, uses Retriever.from_artifact()
+    # which downloads pre-built embedded Qdrant storage (no server required).
+    # Set qdrant_url to a real Qdrant instance to use a server instead.
+    enable_retrieval: bool = False
+    qdrant_url: Optional[str] = None
 
     # Layer 3 — validation
     enable_validation: bool = True
