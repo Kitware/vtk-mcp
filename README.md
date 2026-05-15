@@ -1,228 +1,150 @@
-# VTK MCP Server
+# VTK MCP
 
 <img width="256" height="256" alt="vtk-mcp" src="https://github.com/user-attachments/assets/f1e8fc6d-2f51-4a15-8d02-12a05074dded" />
 
-Access VTK class documentation through a Model Context Protocol server.
+A thin MCP gateway that exposes [vtk-knowledge](https://github.com/vicentebolea/vtk-knowledge), [vtk-index](https://github.com/vicentebolea/vtk-index), and [vtk-validate](https://github.com/vicentebolea/vtk-validate) as Model Context Protocol tools. All domain logic lives in those libraries; this project only wires them together.
 
 ## Installation
 
 ```bash
-# Create virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# With uv (recommended)
+uv add vtk-mcp
 
-# Install the package
-pip install .
+# With pip
+pip install \
+  "git+https://github.com/vicentebolea/vtk-knowledge" \
+  "git+https://github.com/vicentebolea/vtk-validate"
+pip install -e .
+
+# With retrieval support (vtk-index)
+pip install \
+  "git+https://github.com/vicentebolea/vtk-knowledge" \
+  "git+https://github.com/vicentebolea/vtk-validate" \
+  "git+https://github.com/vicentebolea/vtk-index"
+pip install -e ".[retrieval]"
 ```
 
 ## Usage
 
-### Server
-
 ```bash
-# Start stdio server (for MCP clients)
-vtk-mcp-server
+# stdio (default — for MCP clients)
+vtk-mcp
 
-# Start HTTP server for direct access
-vtk-mcp-server --transport http --host localhost --port 8000
+# HTTP
+vtk-mcp --transport http --port 8000
+
+# Pin a specific VTK version (artifact auto-downloaded from ghcr.io)
+vtk-mcp --vtk-version 9.6.1
 ```
 
-### Client
+Key environment variables:
 
-```bash
-# Get detailed C++ class information
-vtk-mcp-client info-cpp vtkActor
-vtk-mcp-client info-cpp vtkPolyData
-
-# Get Python API documentation
-vtk-mcp-client info-python vtkSphere
-vtk-mcp-client info-python Renderer
-
-# Search for classes containing a term
-vtk-mcp-client search Camera
-vtk-mcp-client search Filter
-
-# List available tools
-vtk-mcp-client list-tools
-
-# Connect to different server
-vtk-mcp-client --host localhost --port 8000 info-cpp vtkActor
-```
+| Variable | Default | Description |
+|---|---|---|
+| `VTK_MCP_VTK_VERSION` | `9.3.0` | VTK version to fetch artifacts for |
+| `VTK_MCP_KNOWLEDGE_ARTIFACT_PATH` | _(auto)_ | Local JSONL path; skips auto-download |
+| `VTK_MCP_ENABLE_RETRIEVAL` | `false` | Enable vtk-index semantic search |
+| `VTK_MCP_QDRANT_URL` | _(auto)_ | Qdrant URL; if unset uses embedded storage |
+| `VTK_MCP_ENABLE_VALIDATION` | `true` | Enable vtk-validate code validation |
+| `VTK_MCP_TRANSPORT` | `stdio` | `stdio` or `http` |
 
 ## MCP Tools
 
-The server provides four MCP tools:
-- `get_vtk_class_info_cpp(class_name)` - Get detailed C++ documentation for a VTK class from online documentation
-- `get_vtk_class_info_python(class_name)` - Get Python API documentation using help() function
-- `search_vtk_classes(search_term)` - Search for VTK classes containing a term
-- `vector_search_vtk_examples(query)` - Search VTK examples using vector similarity (requires embeddings database)
+### Documentation — via [vtk-knowledge](https://github.com/vicentebolea/vtk-knowledge)
 
-## Vector Search with RAG
+| Tool | Description |
+|---|---|
+| `get_vtk_class_info_python(class_name)` | Full Python API record for a VTK class |
+| `vtk_search_classes(query, limit)` | Search classes by name or keyword |
+| `vtk_get_class_doc(class_name)` | Docstring for a class |
+| `vtk_get_class_synopsis(class_name)` | One-sentence synopsis |
+| `vtk_get_class_role(class_name)` | Pipeline role (source / filter / mapper / …) |
+| `vtk_get_class_input_datatype(class_name)` | Expected input data type |
+| `vtk_get_class_output_datatype(class_name)` | Produced output data type |
+| `vtk_get_class_methods(class_name)` | All methods with signatures |
+| `vtk_get_class_semantic_methods(class_name)` | Non-boilerplate callable methods |
+| `vtk_get_method_info(class_name, method_name)` | Full method record |
+| `vtk_get_method_doc(class_name, method_name)` | Method docstring |
+| `vtk_get_method_signature(class_name, method_name)` | Canonical method signature |
+| `vtk_get_class_module(class_name)` | `vtkmodules.*` import path |
+| `vtk_get_module_classes(module)` | All classes in a module |
+| `vtk_is_a_class(class_name)` | Check if a name is a valid VTK class |
+| `vtk_get_class_action_phrase(class_name)` | Action phrase (e.g. "mesh smoothing") |
+| `vtk_get_class_visibility(class_name)` | Visibility score 0.0–1.0 |
+| `vtk_version_info()` | VTK version and enabled features |
 
-The server supports semantic search over VTK Python examples using vector embeddings. This requires the embeddings database.
+### Semantic search — via [vtk-index](https://github.com/vicentebolea/vtk-index)
 
-### Downloading the Embeddings Database
+Requires `VTK_MCP_ENABLE_RETRIEVAL=true`. vtk-index handles all chunking, embedding, and Qdrant retrieval; vtk-mcp simply delegates.
 
-The pre-built embeddings database is available as a container image on GitHub Container Registry:
+| Tool | Description |
+|---|---|
+| `vector_search_docs(query, k)` | Hybrid search over VTK documentation chunks |
+| `vector_search_examples(query, k)` | Hybrid search over VTK code example chunks |
 
-```bash
-# Using Docker
-docker create --name vtk-embeddings ghcr.io/kitware/vtk-mcp/embeddings-database:latest
-docker cp vtk-embeddings:/vtk-examples-embeddings.tar.gz .
-docker rm vtk-embeddings
+When `VTK_MCP_QDRANT_URL` is unset, vtk-index downloads a pre-built embedded Qdrant storage from `ghcr.io/vicentebolea/vtk-index` on first use (no server required).
 
-# Using Podman
-podman create --name vtk-embeddings ghcr.io/kitware/vtk-mcp/embeddings-database:latest
-podman cp vtk-embeddings:/vtk-examples-embeddings.tar.gz .
-podman rm vtk-embeddings
+### Validation — via [vtk-validate](https://github.com/vicentebolea/vtk-validate)
 
-# Extract the database
-tar -xzf vtk-examples-embeddings.tar.gz
-```
+| Tool | Description |
+|---|---|
+| `validate_vtk_code(source)` | Validate Python source against the VTK API; returns a `ValidationReport` |
+| `vtk_validate_import(import_statement)` | Validate a VTK import and suggest corrections |
 
-### Using Vector Search
+### C++ documentation scraping
 
-After downloading and extracting the database, start the server with the database path:
-
-```bash
-# Install RAG dependencies
-pip install -r rag-components/requirements.txt
-
-# Start server with vector search enabled
-vtk-mcp-server --transport http --database-path ./db/vtk-examples
-
-# Use vector search with the client
-vtk-mcp-client vector-search "render a sphere"
-vtk-mcp-client vector-search "read DICOM files" --top-k 10
-```
+| Tool | Description |
+|---|---|
+| `get_vtk_class_info_cpp(class_name)` | Scrape C++ docs from vtk.org |
+| `search_vtk_classes_cpp(search_term)` | Search C++ documentation |
 
 ## Docker
 
-### Using Pre-built Image
-
 ```bash
-# Run with Docker/Podman
-docker run -p 8000:8000 ghcr.io/kitware/vtk-mcp:latest
+# Run pre-built image (artifacts pre-cached for VTK 9.6.1)
+podman run ghcr.io/kitware/vtk-mcp:latest
 
-# Or with Podman
-podman run -p 8000:8000 ghcr.io/kitware/vtk-mcp:latest
+# Build locally
+podman build -f deploy.Dockerfile -t vtk-mcp .
 
-# Access server at http://localhost:8000/mcp/
-```
-
-### Building Locally
-
-```bash
-# Build image
-docker build -t vtk-mcp-server .
-
-# Or with Podman
-podman build -t vtk-mcp-server .
-
-# Run container
-docker run -p 8000:8000 vtk-mcp-server
-```
-
-### Docker Compose
-
-```bash
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
+# Build for a specific VTK version
+podman build -f deploy.Dockerfile --build-arg VTK_VERSION=9.6.1 -t vtk-mcp .
 ```
 
 ## Development
 
 ```bash
-# Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate
+# Install sibling packages from local checkouts
+uv sync --extra dev
 
-# Install in development mode
-pip install -e .
+# Or with pip
+pip install \
+  "git+https://github.com/vicentebolea/vtk-knowledge" \
+  "git+https://github.com/vicentebolea/vtk-validate"
+pip install -e ".[dev]"
 
-# Format and lint
-black src/
-flake8 src/ --max-line-length=88
+# Lint and format
+ruff check src/vtk_mcp/
+ruff format src/vtk_mcp/
 
-# Test the HTTP server and client
-vtk-mcp-server --transport http &
-vtk-mcp-client info-cpp vtkActor
+# Tests
+pytest -m unit
+pytest tests/test_client_no_server.py
+pytest -m integration
 ```
 
-## Testing
+## Architecture
 
-Install test dependencies:
-
-```bash
-pip install -e ".[test]"
+```
+vtk-mcp  (this repo — composition root only)
+├── vtk-knowledge   schema, VTKAPIIndex, artifact download
+├── vtk-index       chunking, embedding, Qdrant retrieval
+└── vtk-validate    AST-based code validation
 ```
 
-Run tests:
-
-```bash
-# Run all tests
-pytest
-
-# Run specific test types using markers
-pytest -m unit                  # Unit tests only
-pytest -m integration           # Integration tests only
-pytest -m http                  # HTTP transport tests
-pytest -m stdio                 # Stdio transport tests
-
-# Run specific test files
-pytest tests/test_server_functions.py      # Server unit tests
-pytest tests/test_client_no_server.py      # Client error handling
-pytest tests/test_http_integration.py      # HTTP integration
-pytest tests/test_stdio_integration.py     # Stdio integration
-
-# Useful pytest options
-pytest -v                       # Verbose output
-pytest -x                       # Stop on first failure
-pytest --tb=short              # Short traceback format
-pytest -k "test_name"          # Run tests matching pattern
-```
-
-### Test Structure
-
-- `tests/test_server_functions.py` - Unit tests for MCP tool functions (no server required)
-- `tests/test_client_no_server.py` - Client error handling when server unavailable
-- `tests/test_http_integration.py` - Full integration tests with HTTP transport
-- `tests/test_stdio_integration.py` - Full integration tests with stdio transport
-- `tests/conftest.py` - Shared test fixtures and configuration
-
-## Release Process
-
-The package version is automatically determined from git tags using `hatch-vcs`.
-
-### Creating a Release
-
-```bash
-# 1. Ensure all changes are committed
-git status
-
-# 2. Create and push a new tag
-git tag -a v0.2.0 -m "Release v0.2.0"
-git push origin v0.2.0
-
-# 3. Build the package
-pip install build hatch-vcs twine
-python -m build
-
-# 4. Check the package
-twine check dist/*
-
-# 5. Upload to PyPI (or TestPyPI first)
-twine upload dist/*
-# For TestPyPI: twine upload --repository testpypi dist/*
-```
-
-The version will be automatically set based on the git tag.
+`src/vtk_mcp/composition.py` constructs all dependencies once at startup; tool handlers in `src/vtk_mcp/tools/` delegate to the libraries with no added logic.
 
 ## Authors
+
+- Patrick O'Leary @ Kitware
 - Vicente Bolea @ Kitware
