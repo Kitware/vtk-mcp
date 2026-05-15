@@ -54,7 +54,6 @@ def ctx():
 
     settings = Settings(
         knowledge_artifact_path=None,
-        enable_retrieval=False,
         enable_validation=True,
     )
 

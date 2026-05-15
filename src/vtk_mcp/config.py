@@ -16,11 +16,8 @@ class Settings(BaseSettings):
     knowledge_artifact_path: Optional[Path] = None
     vtk_version: str = "9.3.0"
 
-    # Layer 2 — retrieval
-    # When enable_retrieval is True and vtk_version is set, uses Retriever.from_artifact()
-    # which downloads pre-built embedded Qdrant storage (no server required).
-    # Set qdrant_url to a real Qdrant instance to use a server instead.
-    enable_retrieval: bool = False
+    # Layer 2 — retrieval (always attempted; silently disabled if vtk-index not installed)
+    # Set qdrant_url to a running Qdrant server; if unset, uses embedded storage from ghcr.io.
     qdrant_url: Optional[str] = None
 
     # Layer 3 — validation
@@ -30,10 +27,6 @@ class Settings(BaseSettings):
     transport: str = "stdio"
     http_host: str = "0.0.0.0"
     http_port: int = 8000
-
-    # C++ docs scraping
-    enable_cpp_scraping: bool = True
-    vtk_docs_base_url: str = "https://vtk.org/doc/nightly/html/"
 
     class Config:
         env_prefix = "VTK_MCP_"

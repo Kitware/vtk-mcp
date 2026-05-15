@@ -43,29 +43,25 @@ class VTKMCPContext:
             self.api_index.vtk_version,
         )
 
-        # Layer 2: retrieval (optional)
+        # Layer 2: retrieval — always attempted; stays None if vtk-index not installed
         self.retriever = None
-        if settings.enable_retrieval:
-            try:
-                from vtk_index import Retriever
+        try:
+            from vtk_index import Retriever
 
-                if settings.qdrant_url:
-                    # Connect to a running Qdrant server
-                    self.retriever = Retriever(
-                        qdrant_url=settings.qdrant_url,
-                        vtk_version=self.api_index.vtk_version,
-                    )
-                    logger.info("Retriever connected to %s", settings.qdrant_url)
-                else:
-                    # Download pre-built embedded storage (no server required)
-                    logger.info(
-                        "Downloading embedded Qdrant storage for VTK %s",
-                        self.api_index.vtk_version,
-                    )
-                    self.retriever = Retriever.from_artifact(self.api_index.vtk_version)
-                    logger.info("Retriever ready (embedded storage)")
-            except Exception as exc:
-                logger.warning("Retrieval disabled: %s", exc)
+            if settings.qdrant_url:
+                self.retriever = Retriever(
+                    qdrant_url=settings.qdrant_url,
+                    vtk_version=self.api_index.vtk_version,
+                )
+                logger.info("Retriever connected to %s", settings.qdrant_url)
+            else:
+                logger.info("Downloading embedded Qdrant storage for VTK %s", self.api_index.vtk_version)
+                self.retriever = Retriever.from_artifact(self.api_index.vtk_version)
+                logger.info("Retriever ready (embedded storage)")
+        except ImportError:
+            logger.info("vtk-index not installed — vector search unavailable")
+        except Exception as exc:
+            logger.warning("Retriever init failed: %s", exc)
 
         # Layer 3: validation (optional — library call, no subprocess)
         self.validate = None

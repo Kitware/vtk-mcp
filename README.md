@@ -43,8 +43,7 @@ Key environment variables:
 |---|---|---|
 | `VTK_MCP_VTK_VERSION` | `9.3.0` | VTK version to fetch artifacts for |
 | `VTK_MCP_KNOWLEDGE_ARTIFACT_PATH` | _(auto)_ | Local JSONL path; skips auto-download |
-| `VTK_MCP_ENABLE_RETRIEVAL` | `false` | Enable vtk-index semantic search |
-| `VTK_MCP_QDRANT_URL` | _(auto)_ | Qdrant URL; if unset uses embedded storage |
+| `VTK_MCP_QDRANT_URL` | _(auto)_ | Qdrant server URL; if unset uses embedded storage from ghcr.io |
 | `VTK_MCP_ENABLE_VALIDATION` | `true` | Enable vtk-validate code validation |
 | `VTK_MCP_TRANSPORT` | `stdio` | `stdio` or `http` |
 
