@@ -166,19 +166,47 @@ def vtk_get_class_visibility(class_name: str) -> float | None:
 
 
 @mcp.tool()
-def vector_search_docs(query: str, k: int = 10) -> list:
-    """Hybrid semantic search over VTK documentation chunks."""
+def vector_search_docs(
+    query: str,
+    k: int = 10,
+    role: str | None = None,
+    class_name: str | None = None,
+    min_visibility: float | None = None,
+) -> list:
+    """Hybrid semantic search over VTK documentation chunks.
+
+    Args:
+        query: Natural language query.
+        k: Number of results to return.
+        role: Filter by pipeline role (e.g. 'source', 'filter', 'mapper').
+        class_name: Filter to chunks mentioning a specific VTK class.
+        min_visibility: Minimum visibility score (0.0–1.0) for returned chunks.
+    """
     from .tools.search import vector_search_docs as _f
 
-    return _f(query, _ctx(), k=k)
+    return _f(query, _ctx(), k=k, role=role, class_name=class_name, min_visibility=min_visibility)
 
 
 @mcp.tool()
-def vector_search_examples(query: str, k: int = 10) -> list:
-    """Hybrid semantic search over VTK code example chunks."""
+def vector_search_examples(
+    query: str,
+    k: int = 10,
+    role: str | None = None,
+    class_name: str | None = None,
+    min_visibility: float | None = None,
+) -> list:
+    """Hybrid semantic search over VTK code example chunks.
+
+    Args:
+        query: Natural language query.
+        k: Number of results to return.
+        role: Filter by pipeline role (e.g. 'source', 'filter', 'mapper').
+        class_name: Filter to chunks mentioning a specific VTK class.
+        min_visibility: Minimum visibility score (0.0–1.0) for returned chunks.
+    """
     from .tools.search import vector_search_examples as _f
 
-    return _f(query, _ctx(), k=k)
+    return _f(query, _ctx(), k=k, role=role, class_name=class_name, min_visibility=min_visibility)
 
 
 # ── Layer 3: Validation ────────────────────────────────────────────────────

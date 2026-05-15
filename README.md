@@ -50,7 +50,9 @@ Key environment variables:
 
 ## MCP Tools
 
-### Documentation — via [vtk-knowledge](https://github.com/vicentebolea/vtk-knowledge)
+### Knowledge lookup — via [vtk-knowledge](https://github.com/vicentebolea/vtk-knowledge) + [vtk-validate](https://github.com/vicentebolea/vtk-validate)
+
+Data comes from the vtk-knowledge artifact; the query helpers are implemented in vtk-validate's tool layer.
 
 | Tool | Description |
 |---|---|
@@ -58,7 +60,7 @@ Key environment variables:
 | `vtk_search_classes(query, limit)` | Search classes by name or keyword |
 | `vtk_get_class_doc(class_name)` | Docstring for a class |
 | `vtk_get_class_synopsis(class_name)` | One-sentence synopsis |
-| `vtk_get_class_role(class_name)` | Pipeline role (source / filter / mapper / …) |
+| `vtk_get_class_role(class_name)` | Pipeline role (`source` / `filter` / `mapper` / …) |
 | `vtk_get_class_input_datatype(class_name)` | Expected input data type |
 | `vtk_get_class_output_datatype(class_name)` | Produced output data type |
 | `vtk_get_class_methods(class_name)` | All methods with signatures |
@@ -75,21 +77,32 @@ Key environment variables:
 
 ### Semantic search — via [vtk-index](https://github.com/vicentebolea/vtk-index)
 
-Requires `VTK_MCP_ENABLE_RETRIEVAL=true`. vtk-index handles all chunking, embedding, and Qdrant retrieval; vtk-mcp simply delegates.
+Requires `VTK_MCP_ENABLE_RETRIEVAL=true`. vtk-index owns all chunking, embedding, and Qdrant hybrid retrieval (dense + BM25 with RRF fusion); vtk-mcp simply delegates.
 
 | Tool | Description |
 |---|---|
-| `vector_search_docs(query, k)` | Hybrid search over VTK documentation chunks |
-| `vector_search_examples(query, k)` | Hybrid search over VTK code example chunks |
+| `vector_search_docs(query, k, role, class_name, min_visibility)` | Hybrid search over VTK documentation chunks |
+| `vector_search_examples(query, k, role, class_name, min_visibility)` | Hybrid search over VTK code example chunks |
 
-When `VTK_MCP_QDRANT_URL` is unset, vtk-index downloads a pre-built embedded Qdrant storage from `ghcr.io/vicentebolea/vtk-index` on first use (no server required).
+Both search tools accept optional Qdrant payload filters:
+
+| Parameter | Type | Description |
+|---|---|---|
+| `k` | `int` | Number of results (default 10) |
+| `role` | `str` | Filter by pipeline role (`source`, `filter`, `mapper`, `output`) |
+| `class_name` | `str` | Restrict to chunks mentioning a specific class |
+| `min_visibility` | `float` | Minimum visibility score threshold (0.0–1.0) |
+
+When `VTK_MCP_QDRANT_URL` is unset, vtk-index downloads a pre-built embedded Qdrant storage from `ghcr.io/vicentebolea/vtk-index` on first use — no server required.
 
 ### Validation — via [vtk-validate](https://github.com/vicentebolea/vtk-validate)
 
+AST-based validation against the VTK API. Checks imports, constructors, method calls, argument ordering, and security issues.
+
 | Tool | Description |
 |---|---|
-| `validate_vtk_code(source)` | Validate Python source against the VTK API; returns a `ValidationReport` |
-| `vtk_validate_import(import_statement)` | Validate a VTK import and suggest corrections |
+| `validate_vtk_code(source)` | Validate a Python source string; returns `{status, diagnostics, vtk_version, elapsed_ms}` |
+| `vtk_validate_import(import_statement)` | Validate a single import line and suggest corrections |
 
 ### C++ documentation scraping
 
