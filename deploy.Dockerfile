@@ -1,46 +1,51 @@
-LABEL org.opencontainers.image.title="VTK MCP Server with Embeddings"
-LABEL org.opencontainers.image.description="Model Context Protocol server for VTK with vector search embeddings"
-LABEL org.opencontainers.image.source="https://github.com/kitware/vtk-mcp"
-LABEL org.opencontainers.image.authors="Vicente Adolfo Bolea Sanchez <vicente.bolea@kitware.com>"
-LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.documentation="https://github.com/kitware/vtk-mcp/blob/main/README.md"
-
-FROM python:3.12-slim AS embeddings
-
-# Download embeddings database from GHCR
-COPY --from=ghcr.io/kitware/vtk-mcp/embeddings-database:latest /vtk-examples-embeddings.tar.gz /tmp/
-
-# Extract the database
-RUN mkdir -p /app/db && \
-    tar -xzf /tmp/vtk-examples-embeddings.tar.gz -C /app/db && \
-    rm /tmp/vtk-examples-embeddings.tar.gz
-
 FROM python:3.12-slim
+
+LABEL org.opencontainers.image.title="VTK MCP Gateway"
+LABEL org.opencontainers.image.description="Production MCP gateway for VTK LLM tooling"
+LABEL org.opencontainers.image.source="https://github.com/Kitware/vtk-mcp"
+LABEL org.opencontainers.image.licenses="MIT"
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# Install system dependencies for VTK
-RUN apt update && \
-    apt install --no-install-recommends --no-install-suggests -y \
-    libgl1-mesa-dev \
-    libxrender-dev/stable \
-    git && \
-    rm -rf /var/lib/apt/lists/*
+# VTK version to pre-cache at image build time
+ARG VTK_VERSION=9.3.0
+ENV VTK_MCP_VTK_VERSION=${VTK_VERSION}
 
 WORKDIR /app
 
-# Copy application code
-COPY . .
+# Install uv for fast dependency installation
+RUN pip install uv
 
-# Copy embeddings database from first stage
-COPY --from=embeddings /app/db /app/db
+# Install vtk-* sibling packages from GitHub (not on PyPI)
+RUN uv pip install --system \
+    "git+https://github.com/vicentebolea/vtk-knowledge" \
+    "git+https://github.com/vicentebolea/vtk-validate"
 
-# Install Python dependencies (including RAG dependencies)
-RUN pip install --upgrade pip && \
-    pip install --verbose .
+# Install vtk-mcp with optional retrieval support
+COPY . /app/
+RUN uv pip install --system -e ".[retrieval]"
 
-# Start server with database path configured
-CMD ["vtk-mcp-server", "--transport", "http", "--host", "0.0.0.0", "--port", "8000", "--database-path", "/app/db/vtk-examples"]
+# Pre-download the vtk-knowledge JSONL artifact and vtk-index embedded
+# Qdrant storage so the image is ready to serve without network access.
+RUN python - <<'EOF'
+import logging
+logging.basicConfig(level=logging.INFO)
+import os
+vtk_version = os.environ["VTK_MCP_VTK_VERSION"]
+from vtk_knowledge import VTKAPIIndex
+VTKAPIIndex.from_artifact(vtk_version)
+try:
+    from vtk_index import Retriever
+    Retriever.from_artifact(vtk_version)
+except Exception as e:
+    logging.warning("vtk-index embedded storage skipped: %s", e)
+EOF
+
+ENV VTK_MCP_TRANSPORT=stdio
+ENV VTK_MCP_ENABLE_VALIDATION=true
+ENV VTK_MCP_ENABLE_RETRIEVAL=true
+
+ENTRYPOINT ["python", "-m", "vtk_mcp"]

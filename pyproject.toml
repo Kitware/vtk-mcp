@@ -59,9 +59,9 @@ Issues = "https://github.com/Kitware/vtk-mcp/issues"
 packages = ["src/vtk_mcp"]
 
 [tool.uv.sources]
-vtk-knowledge = { path = "../vtk-knowledge", editable = true }
-vtk-validate = { path = "../vtk-validate", editable = true }
-vtk-index = { path = "../vtk-index", editable = true }
+vtk-knowledge = { git = "https://github.com/vicentebolea/vtk-knowledge" }
+vtk-validate = { git = "https://github.com/vicentebolea/vtk-validate" }
+vtk-index = { git = "https://github.com/vicentebolea/vtk-index" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
