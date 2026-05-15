@@ -113,6 +113,41 @@ AST-based validation against the VTK API. Checks imports, constructors, method c
 | `vtk_validate_import(import_statement)` | Validate a single import line and suggest corrections |
 
 
+## Claude Code integration
+
+Add to your project's `.claude/settings.json` (or `~/.claude/settings.json` for global use):
+
+```json
+{
+  "mcpServers": {
+    "vtk": {
+      "type": "stdio",
+      "command": "vtk-mcp",
+      "args": ["--vtk-version", "9.6.1"]
+    }
+  }
+}
+```
+
+Or use the pre-built container image (no local install required):
+
+```json
+{
+  "mcpServers": {
+    "vtk": {
+      "type": "stdio",
+      "command": "podman",
+      "args": [
+        "run", "--rm", "-i",
+        "ghcr.io/kitware/vtk-mcp/vtk-mcp:latest"
+      ]
+    }
+  }
+}
+```
+
+After adding the config, run `/mcp` in Claude Code to verify the server connects and tools are listed.
+
 ## Docker
 
 ```bash
