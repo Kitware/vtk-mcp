@@ -10,13 +10,18 @@ logging.basicConfig(level=logging.INFO)
 
 vtk_version = os.environ["VTK_MCP_VTK_VERSION"]
 
-from vtk_knowledge import VTKAPIIndex
+try:
+    from vtk_knowledge import VTKAPIIndex
 
-VTKAPIIndex.from_artifact(vtk_version)
+    VTKAPIIndex.from_artifact(vtk_version)
+    logging.info("vtk-knowledge artifact cached for %s", vtk_version)
+except Exception as e:
+    logging.warning("vtk-knowledge artifact not cached (will download at runtime): %s", e)
 
 try:
     from vtk_index import Retriever
 
     Retriever.from_artifact(vtk_version)
+    logging.info("vtk-index embedded storage cached for %s", vtk_version)
 except Exception as e:
-    logging.warning("vtk-index embedded storage skipped: %s", e)
+    logging.warning("vtk-index embedded storage not cached (will download at runtime): %s", e)

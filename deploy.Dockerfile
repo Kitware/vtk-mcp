@@ -11,7 +11,7 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONUNBUFFERED=1
 
 # VTK version to pre-cache at image build time
-ARG VTK_VERSION=9.3.0
+ARG VTK_VERSION=9.6.1
 ENV VTK_MCP_VTK_VERSION=${VTK_VERSION}
 
 RUN apt-get update && \
