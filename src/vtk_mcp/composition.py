@@ -24,14 +24,19 @@ class VTKMCPContext:
 
     api_index: VTKAPIIndex
     retriever: object  # vtk_index.Retriever | None
-    validate: object   # callable(source: str) -> ValidationReport | None
+    validate: object  # callable(source: str) -> ValidationReport | None
     settings: Settings
 
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
-        # Layer 1: knowledge index
-        logger.info("Loading knowledge artifact from %s", settings.knowledge_artifact_path)
-        self.api_index = VTKAPIIndex.from_jsonl(settings.knowledge_artifact_path)
+
+        # Layer 1: knowledge index — download artifact if no local path given
+        if settings.knowledge_artifact_path is not None:
+            logger.info("Loading knowledge artifact from %s", settings.knowledge_artifact_path)
+            self.api_index = VTKAPIIndex.from_jsonl(settings.knowledge_artifact_path)
+        else:
+            logger.info("Downloading knowledge artifact for VTK %s", settings.vtk_version)
+            self.api_index = VTKAPIIndex.from_artifact(settings.vtk_version)
         logger.info(
             "Loaded %d classes (vtk_version=%s)",
             len(self.api_index.classes),
@@ -44,11 +49,21 @@ class VTKMCPContext:
             try:
                 from vtk_index import Retriever
 
-                self.retriever = Retriever(
-                    qdrant_url=settings.qdrant_url,
-                    vtk_version=self.api_index.vtk_version,
-                )
-                logger.info("Retriever connected to %s", settings.qdrant_url)
+                if settings.qdrant_url:
+                    # Connect to a running Qdrant server
+                    self.retriever = Retriever(
+                        qdrant_url=settings.qdrant_url,
+                        vtk_version=self.api_index.vtk_version,
+                    )
+                    logger.info("Retriever connected to %s", settings.qdrant_url)
+                else:
+                    # Download pre-built embedded storage (no server required)
+                    logger.info(
+                        "Downloading embedded Qdrant storage for VTK %s",
+                        self.api_index.vtk_version,
+                    )
+                    self.retriever = Retriever.from_artifact(self.api_index.vtk_version)
+                    logger.info("Retriever ready (embedded storage)")
             except Exception as exc:
                 logger.warning("Retrieval disabled: %s", exc)
 

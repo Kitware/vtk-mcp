@@ -17,6 +17,7 @@ def get_vtk_class_info_cpp(class_name: str, ctx: "VTKMCPContext") -> str:
     if not ctx.settings.enable_cpp_scraping:
         return "C++ scraping disabled (VTK_MCP_ENABLE_CPP_SCRAPING=false)."
     from .vtk_scraper import VTKClassScraper
+
     scraper = VTKClassScraper()
     info = scraper.get_class_info(class_name)
     if info is None:
@@ -29,6 +30,7 @@ def search_vtk_classes_cpp(search_term: str, ctx: "VTKMCPContext") -> str:
     if not ctx.settings.enable_cpp_scraping:
         return "C++ scraping disabled (VTK_MCP_ENABLE_CPP_SCRAPING=false)."
     from .vtk_scraper import VTKClassScraper
+
     scraper = VTKClassScraper()
     matches = scraper.search_classes(search_term)
     if not matches:

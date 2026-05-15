@@ -173,9 +173,12 @@ class TestServerFunctionsCpp:
 class TestServerFunctionsPython:
     """Test the Python API documentation function."""
 
+    @pytest.mark.skipif(
+        __import__("importlib.util", fromlist=["find_spec"]).find_spec("vtk") is None,
+        reason="VTK Python package not installed",
+    )
     def test_get_vtk_class_info_python_success(self):
         """Test successful Python class info retrieval."""
-        # Since VTK is actually installed, let's test with real VTK
         result = get_vtk_class_info_python_func("vtkSphere")
 
         # Should return formatted Python API documentation
