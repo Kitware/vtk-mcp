@@ -25,10 +25,10 @@ jobs:
         run: uv sync --extra dev
 
       - name: ruff lint
-        run: uv run ruff check src/
+        run: uv run ruff check src/vtk_mcp/
 
       - name: ruff format check
-        run: uv run ruff format --check src/
+        run: uv run ruff format --check src/vtk_mcp/
 
   actionlint:
     runs-on: ubuntu-latest
