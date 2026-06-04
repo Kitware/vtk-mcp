@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     # Layer 3 — validation
     enable_validation: bool = True
 
+    # DSL translation
+    translate_model: str = "anthropic/claude-haiku-4-5"
+    translate_base_url: Optional[str] = None  # e.g. http://localhost:11434 for Ollama
+    translate_api_key: Optional[str] = None   # set to "ollama" for Ollama
+
     # Transport
     transport: str = "stdio"
     http_host: str = "0.0.0.0"

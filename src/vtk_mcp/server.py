@@ -250,6 +250,48 @@ def vtk_validate_import(import_statement: str) -> dict:
     return _f(import_statement, _ctx())
 
 
+# ── DSL translation ────────────────────────────────────────────────────────
+
+
+@mcp.tool()
+def translate_prompt_to_dsl(
+    query: str,
+    model: str | None = None,
+    base_url: str | None = None,
+    api_key: str | None = None,
+) -> str:
+    """Translate a natural language VTK request into the pipeline DSL.
+
+    The DSL encodes the full pipeline as a structured specification
+    (sources, filters, auxiliary objects, render settings) with explicit
+    class slugs and parameter names, which produces more accurate code
+    generation than plain natural language.
+
+    Args:
+        query: Natural language description of the desired VTK visualization.
+        model: LiteLLM model identifier. Overrides VTK_MCP_TRANSLATE_MODEL when set.
+               Use e.g. ``ollama/llama3`` for a local Ollama model.
+        base_url: OpenAI-compatible base URL. Overrides VTK_MCP_TRANSLATE_BASE_URL.
+                  Example: ``http://localhost:11434`` for Ollama.
+        api_key: API key for the endpoint. Overrides VTK_MCP_TRANSLATE_API_KEY.
+                 Pass ``"ollama"`` for Ollama (requires non-empty key).
+
+    Returns:
+        A VTK pipeline DSL string ready to be used as a vtk-prompt input.
+    """
+    from .tools.dsl import translate_prompt_to_dsl as _f
+
+    return _f(query, _ctx(), model=model, base_url=base_url, api_key=api_key)
+
+
+@mcp.tool()
+def is_dsl_prompt(text: str) -> bool:
+    """Return True if *text* is already in the VTK pipeline DSL format."""
+    from .tools.dsl import is_dsl_prompt as _f
+
+    return _f(text)
+
+
 # ── Meta ───────────────────────────────────────────────────────────────────
 
 
