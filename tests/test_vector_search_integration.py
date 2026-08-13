@@ -18,6 +18,9 @@ pytestmark = [pytest.mark.integration, pytest.mark.vector_search]
 @pytest.fixture(scope="module")
 def embeddings_database(tmp_path_factory):
     """Download and extract embeddings database from container image or use local."""
+    pytest.importorskip("chromadb")
+    pytest.importorskip("sentence_transformers")
+
     # First check if we have a local database
     local_db = Path(__file__).parent.parent / "db" / "vtk-examples"
     if local_db.exists() and (local_db / "chroma.sqlite3").exists():
