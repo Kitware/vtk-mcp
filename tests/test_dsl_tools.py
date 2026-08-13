@@ -63,7 +63,9 @@ class TestTranslatePromptToDsl:
         from vtk_mcp.tools.dsl import translate_prompt_to_dsl
 
         ctx = _make_ctx(translate_model="default-model")
-        with patch("vtk_validate.dsl.translate_to_dsl", return_value="render render with background [0,0,0]") as mock_fn:
+        with patch(
+            "vtk_validate.dsl.translate_to_dsl", return_value="render render with background [0,0,0]"
+        ) as mock_fn:
             translate_prompt_to_dsl("make a scene", ctx, model="override-model")
 
         mock_fn.assert_called_once_with(
@@ -78,7 +80,9 @@ class TestTranslatePromptToDsl:
         from vtk_mcp.tools.dsl import translate_prompt_to_dsl
 
         ctx = _make_ctx(translate_model="settings-model")
-        with patch("vtk_validate.dsl.translate_to_dsl", return_value="render render with background [0,0,0]") as mock_fn:
+        with patch(
+            "vtk_validate.dsl.translate_to_dsl", return_value="render render with background [0,0,0]"
+        ) as mock_fn:
             translate_prompt_to_dsl("make a scene", ctx)
 
         assert mock_fn.call_args.kwargs["model"] == "settings-model"
@@ -88,6 +92,20 @@ class TestTranslatePromptToDsl:
 
         ctx = _make_ctx()
         with patch.dict("sys.modules", {"vtk_validate.dsl": None}):
+            result = translate_prompt_to_dsl("make a sphere", ctx)
+
+        assert result.startswith("Error:")
+
+    def test_missing_litellm_returns_error(self):
+        """translate_to_dsl imports litellm lazily, so ImportError can surface
+        from the call itself, not just from importing vtk_validate.dsl."""
+        from vtk_mcp.tools.dsl import translate_prompt_to_dsl
+
+        ctx = _make_ctx()
+        with patch(
+            "vtk_validate.dsl.translate_to_dsl",
+            side_effect=ImportError("litellm is required for DSL translation."),
+        ):
             result = translate_prompt_to_dsl("make a sphere", ctx)
 
         assert result.startswith("Error:")

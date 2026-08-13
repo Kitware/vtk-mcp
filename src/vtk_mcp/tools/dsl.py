@@ -33,16 +33,16 @@ def translate_prompt_to_dsl(
     """
     try:
         from vtk_validate.dsl import translate_to_dsl
+
+        return translate_to_dsl(
+            query=query,
+            api_index=ctx.api_index,
+            model=model or ctx.settings.translate_model,
+            base_url=base_url or ctx.settings.translate_base_url,
+            api_key=api_key or ctx.settings.translate_api_key,
+        )
     except ImportError as e:
         return f"Error: vtk-validate[translate] not installed — {e}"
-
-    return translate_to_dsl(
-        query=query,
-        api_index=ctx.api_index,
-        model=model or ctx.settings.translate_model,
-        base_url=base_url or ctx.settings.translate_base_url,
-        api_key=api_key or ctx.settings.translate_api_key,
-    )
 
 
 def is_dsl_prompt(text: str) -> bool:

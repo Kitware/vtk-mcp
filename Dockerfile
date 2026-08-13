@@ -22,7 +22,7 @@ RUN pip install uv
 # Install vtk-* sibling packages from GitHub (not on PyPI)
 RUN uv pip install --system \
     "git+https://github.com/vicentebolea/vtk-knowledge" \
-    "git+https://github.com/vicentebolea/vtk-validate"
+    "vtk-validate[translate] @ git+https://github.com/vicentebolea/vtk-validate"
 
 # Install vtk-mcp with optional retrieval support
 COPY . /app/
