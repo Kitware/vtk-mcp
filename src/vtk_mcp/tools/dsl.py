@@ -8,41 +8,26 @@ if TYPE_CHECKING:
     from ..composition import VTKMCPContext
 
 
-def translate_prompt_to_dsl(
-    query: str,
-    ctx: "VTKMCPContext",
-    model: str | None = None,
-    base_url: str | None = None,
-    api_key: str | None = None,
-) -> str:
-    """Translate a natural language VTK request into the pipeline DSL.
+def translate_prompt_to_dsl(query: str, ctx: "VTKMCPContext") -> str:
+    """Build DSL grammar and class context for translating a VTK request.
 
-    Uses vtk-validate's DSL translator with the loaded api_index for class
-    context. All parameters fall back to VTK_MCP_TRANSLATE_* env vars when
-    not provided.
+    Uses vtk-validate's DSL context builder with the loaded api_index for
+    class context. No LLM call is made — the caller is expected to use the
+    returned grammar and context to write the DSL itself.
 
     Args:
         query: Natural language description (e.g. "create a warped sine surface").
-        model: LiteLLM model identifier. Overrides VTK_MCP_TRANSLATE_MODEL when set.
-        base_url: OpenAI-compatible base URL (e.g. ``http://localhost:11434`` for Ollama).
-                  Overrides VTK_MCP_TRANSLATE_BASE_URL when set.
-        api_key: API key for the endpoint. Overrides VTK_MCP_TRANSLATE_API_KEY when set.
 
     Returns:
-        A VTK pipeline DSL string ready for code generation.
+        A text block with translation instructions, the DSL grammar,
+        relevant VTK class context, and the original request.
     """
     try:
-        from vtk_validate.dsl import translate_to_dsl
-
-        return translate_to_dsl(
-            query=query,
-            api_index=ctx.api_index,
-            model=model or ctx.settings.translate_model,
-            base_url=base_url or ctx.settings.translate_base_url,
-            api_key=api_key or ctx.settings.translate_api_key,
-        )
+        from vtk_validate.dsl import build_dsl_translation_context
     except ImportError as e:
-        return f"Error: vtk-validate[translate] not installed — {e}"
+        return f"Error: vtk-validate not installed — {e}"
+
+    return build_dsl_translation_context(query=query, api_index=ctx.api_index)
 
 
 def is_dsl_prompt(text: str) -> bool:
