@@ -5,6 +5,9 @@ services:
     image: ghcr.io/kitware/vtk-mcp/vtk-mcp:latest
     network_mode: host
     restart: unless-stopped
+    environment:
+      VTK_MCP_TRANSPORT: http
+      VTK_MCP_HTTP_PORT: "8800"
 
   watchtower:
     image: containrrr/watchtower
